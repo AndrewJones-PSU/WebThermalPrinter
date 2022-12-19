@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/AndrewJones-PSU/WebThermalPrinter/issues"
   },
-  "homepage": "https://github.com/AndrewJones-PSU/WebThermalPrinter#readme"
+  "homepage": "https://github.com/AndrewJones-PSU/WebThermalPrinter#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
