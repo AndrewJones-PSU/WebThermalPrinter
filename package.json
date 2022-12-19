@@ -1,0 +1,19 @@
+{
+  "name": "webthermalprinter",
+  "version": "1.0.0",
+  "description": "A node.js application acting as a web interface for a thermal receipt printer. Tuned for the Epson TM-T20ii printer.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndrewJones-PSU/WebThermalPrinter.git"
+  },
+  "author": "AndrewJones-PSU",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AndrewJones-PSU/WebThermalPrinter/issues"
+  },
+  "homepage": "https://github.com/AndrewJones-PSU/WebThermalPrinter#readme"
+}
