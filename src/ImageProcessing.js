@@ -7,7 +7,7 @@
 
 // Import modules
 const config = require("../config.json");
-const marked = require("marked");
+const Jimp = require("jimp");
 
 async function formatImage(img) {
 	// Create a Jimp image from the base64 string
@@ -25,8 +25,8 @@ async function formatImage(img) {
 		case "threshold":
 			image = image.threshold(config.img.threshold);
 			break;
-		case "floyd-steinburg":
-			image = image.dither565();
+		case "floyd-steinberg":
+			image = floydSteinberg(image);
 			break;
 	}
 	// Convert the image to PNG, if necessary
@@ -35,6 +35,12 @@ async function formatImage(img) {
 	}
 	// Return the base64 string
 	return image.toString("base64");
+}
+
+// Given a Jimp image, convert it to black and white using the Floyd-Steinberg algorithm
+function floydSteinberg(image) {
+	// TODO: implement this
+	return image;
 }
 
 module.exports = formatImage;

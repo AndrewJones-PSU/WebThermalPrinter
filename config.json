@@ -4,7 +4,7 @@
 	},
 	"img": {
 		"width": 576,
-		"bwmethod": "floyd-steinburg",
+		"bwmethod": "floyd-steinberg",
 		"threshold": 128
 	}
 }
