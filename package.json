@@ -17,6 +17,10 @@
   },
   "homepage": "https://github.com/AndrewJones-PSU/WebThermalPrinter#readme",
   "dependencies": {
-    "express": "^4.18.2"
+    "escpos": "^3.0.0-alpha.6",
+    "express": "^4.18.2",
+    "jimp": "^0.16.2",
+    "marked": "^4.2.4",
+    "puppeteer": "^19.4.1"
   }
 }
