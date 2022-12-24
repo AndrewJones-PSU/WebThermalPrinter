@@ -39,8 +39,53 @@ async function formatImage(img) {
 
 // Given a Jimp image, convert it to black and white using the Floyd-Steinberg algorithm
 function floydSteinberg(image) {
-	// TODO: implement this
+	// Convert to grayscale
+	image = image.grayscale();
+	// Get pixel values, make 2D array of black & white pixel values
+	// TODO: do all of this directly in jimp instead of making a separate array
+	let pixArray2d = new Array(image.bitmap.width).fill(0).map(() => new Array(image.bitmap.height).fill(0));
+	for (let x = 0; x < image.bitmap.width; x++) {
+		for (let y = 0; y < image.bitmap.height; y++) {
+			pixArray2d[x][y] = Jimp.intToRGBA(image.getPixelColor(x, y)).r;
+		}
+	}
+	// Convert to black and white using Floyd-Steinberg algorithm
+	for (let x = 0; x < image.bitmap.width; x++) {
+		for (let y = 0; y < image.bitmap.height; y++) {
+			let oldColor = pixArray2d[x][y];
+			let newColor = thresholdRound(oldColor);
+			pixArray2d[x][y] = newColor;
+			let error = oldColor - newColor;
+			if (x < image.bitmap.width - 1) {
+				pixArray2d[x + 1][y] = pixArray2d[x + 1][y] + (error * 7) / 16;
+			}
+			if (x > 0 && y < image.bitmap.height - 1) {
+				pixArray2d[x - 1][y + 1] = pixArray2d[x - 1][y + 1] + (error * 3) / 16;
+			}
+			if (y < image.bitmap.height - 1) {
+				pixArray2d[x][y + 1] = pixArray2d[x][y + 1] + (error * 5) / 16;
+			}
+			if (x < image.bitmap.width - 1 && y < image.bitmap.height - 1) {
+				pixArray2d[x + 1][y + 1] = pixArray2d[x + 1][y + 1] + (error * 1) / 16;
+			}
+		}
+	}
+	// Convert 2D array of black & white pixel values to Jimp image
+	for (let x = 0; x < image.bitmap.width; x++) {
+		for (let y = 0; y < image.bitmap.height; y++) {
+			let color = thresholdRound(pixArray2d[x][y]);
+			image.setPixelColor(Jimp.rgbaToInt(color, color, color, 255), x, y);
+		}
+	}
 	return image;
+}
+
+// helper function for Floyd-Steinberg algorithm
+function thresholdRound(value) {
+	if (value < 128) {
+		return 0;
+	}
+	return 255;
 }
 
 module.exports = formatImage;
