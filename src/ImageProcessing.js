@@ -5,13 +5,13 @@
 // Formatting includes:
 // - resizing to config.img.width (default is 576 px wide)
 // - converting to black and white (NOT grayscale) using config.img.bwmethod (can be "none", "threshold", or "floyd-steinburg")
-// - converting format to PNG, if necessary
 // returned image is a jimp image
 
-// splitImage(img)
+// splitAndExport(img)
 // Given an image file buffer, split it into multiple images if it exceeds config.img.maxheight
-// returns an array of jimp images
-// This function is used to split images that are too tall for the printer to handle
+// after splitting, "export" the images out of jimp and into an array of PNG image buffers
+// returns an array of PNG image buffers
+// This function is used to split images that are too tall for the printer to handle + remove the jimp dependency
 
 // Import modules
 const config = require("../config.json");
@@ -37,15 +37,11 @@ async function formatImage(img) {
 			image = floydSteinberg(image);
 			break;
 	}
-	// Convert the image to PNG, if necessary
-	if (image.getExtension() !== "png") {
-		image = await image.getBufferAsync(Jimp.MIME_PNG);
-	}
 	// Return the Jimp image
 	return image;
 }
 
-async function splitImage(img) {
+async function splitAndExport(img) {
 	let images = [];
 	// split the image into multiple images if it exceeds config.img.maxheight
 	if (img.bitmap.height > config.img.maxheight) {
@@ -58,11 +54,12 @@ async function splitImage(img) {
 			let height = Math.min(config.img.maxheight, img.bitmap.height - i * config.img.maxheight);
 			// crop the image
 			let image = await img.clone().crop(0, i * config.img.maxheight, img.bitmap.width, height);
-			// add the image to the array
-			images.push(image);
+			// add the image to the array, exporting it out of jimp
+			images.push(await image.getBufferAsync(Jimp.MIME_PNG));
 		}
 	} else {
-		images.push(img);
+		// if the image is not too tall, just add it to the array, exporting it out of jimp
+		images.push(await img.getBufferAsync(Jimp.MIME_PNG));
 	}
 	return images;
 }
@@ -118,4 +115,4 @@ function thresholdRound(value) {
 	return 255;
 }
 
-module.exports = { formatImage, splitImage };
+module.exports = { formatImage, splitAndExport };
