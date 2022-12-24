@@ -1,13 +1,17 @@
-// Given a base64 text or markdown file, format it for printing, render it to a png, and return the base64 string of the png.
+// Given a text or markdown file buffer, format it for printing, render it to a png, and return a jimp image of the png.
 // the rendered text should appropriate interpret markdown, and should be formatted to fit on the page (config.img.width).
 
 const config = require("../config.json");
 const marked = require("marked");
 const puppeteer = require("puppeteer");
+const Jimp = require("jimp");
 
 let browser;
 let page;
 
+// Initialize the browser and page
+// This is done outside textToImage so that the browser and page are only initialized once
+// initializing the browser and page can take a while (500+ ms in some cases), so this saves a lot of time
 async function init() {
 	browser = await puppeteer.launch();
 	page = await browser.newPage();
@@ -19,12 +23,13 @@ async function init() {
 }
 
 async function textToImage(textFile) {
-	// check if the browser and page have been initialized
+	// check if the browser and page have been initialized, and if not, initialize them
 	if (!browser || !page) {
 		await init();
 	}
 	// Convert the text/md file to html
-	let markedhtml = marked(textFile);
+	// remember that textFile is a buffer, so we convert it to a string here
+	let markedhtml = marked(textFile.toString());
 	// Add HTML to properly size the page/text
 	let html = `
 <html>
@@ -51,6 +56,8 @@ async function textToImage(textFile) {
 	// Render the page to a png
 	// start by setting the page content
 	page.setContent(html);
-	// then take a screenshot and return it
-	return await page.screenshot({ type: "png", fullPage: true, encoding: "base64" });
+	// then take a screenshot
+	screenshot = page.screenshot({ type: "png", fullPage: true, encoding: "base64" });
+	// convert the screenshot to a jimp image and return
+	return Jimp.read(Buffer.from(screenshot, "base64"));
 }

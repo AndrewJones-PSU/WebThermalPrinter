@@ -1,9 +1,9 @@
-// Given a base64 image file, format it for printing
+// Given an image file buffer, format it for printing
 // Formatting includes:
 // - resizing to config.img.width (default is 576 px wide)
 // - converting to black and white (NOT grayscale) using config.img.bwmethod (can be "none", "threshold", or "floyd-steinburg")
 // - converting format to PNG, if necessary
-// returned image is a base64 string
+// returned image is a jimp image
 
 // Import modules
 const config = require("../config.json");
@@ -11,7 +11,7 @@ const Jimp = require("jimp");
 
 async function formatImage(img) {
 	// Create a Jimp image from the base64 string
-	let image = await Jimp.read(Buffer.from(img, "base64"));
+	let image = await Jimp.read(img);
 	// Resize the image
 	image.resize(config.img.width, Jimp.AUTO);
 	// Convert the image to black and white
@@ -33,8 +33,8 @@ async function formatImage(img) {
 	if (image.getExtension() !== "png") {
 		image = await image.getBufferAsync(Jimp.MIME_PNG);
 	}
-	// Return the base64 string
-	return image.toString("base64");
+	// Return the Jimp image
+	return image;
 }
 
 // Given a Jimp image, convert it to black and white using the Floyd-Steinberg algorithm
