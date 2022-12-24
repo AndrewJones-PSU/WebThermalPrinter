@@ -1,3 +1,6 @@
+// This file contains two main functions:
+
+// formatImage(img)
 // Given an image file buffer, format it for printing
 // Formatting includes:
 // - resizing to config.img.width (default is 576 px wide)
@@ -5,12 +8,17 @@
 // - converting format to PNG, if necessary
 // returned image is a jimp image
 
+// splitImage(img)
+// Given an image file buffer, split it into multiple images if it exceeds config.img.maxheight
+// returns an array of jimp images
+// This function is used to split images that are too tall for the printer to handle
+
 // Import modules
 const config = require("../config.json");
 const Jimp = require("jimp");
 
 async function formatImage(img) {
-	// Create a Jimp image from the base64 string
+	// Create a Jimp image from the buffer
 	let image = await Jimp.read(img);
 	// Resize the image
 	image.resize(config.img.width, Jimp.AUTO);
@@ -35,6 +43,28 @@ async function formatImage(img) {
 	}
 	// Return the Jimp image
 	return image;
+}
+
+async function splitImage(img) {
+	let images = [];
+	// split the image into multiple images if it exceeds config.img.maxheight
+	if (img.bitmap.height > config.img.maxheight) {
+		// calculate the number of images needed
+		let numImages = Math.ceil(img.bitmap.height / config.img.maxheight);
+		// split the image into multiple images
+		for (let i = 0; i < numImages; i++) {
+			// calculate the height of the image
+			// This will either be config.img.maxheight or the remaining height of the image
+			let height = Math.min(config.img.maxheight, img.bitmap.height - i * config.img.maxheight);
+			// crop the image
+			let image = await img.clone().crop(0, i * config.img.maxheight, img.bitmap.width, height);
+			// add the image to the array
+			images.push(image);
+		}
+	} else {
+		images.push(img);
+	}
+	return images;
 }
 
 // Given a Jimp image, convert it to black and white using the Floyd-Steinberg algorithm
@@ -88,4 +118,4 @@ function thresholdRound(value) {
 	return 255;
 }
 
-module.exports = formatImage;
+module.exports = { formatImage, splitImage };
