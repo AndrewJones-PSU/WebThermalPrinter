@@ -2,7 +2,7 @@
 // the rendered text should appropriate interpret markdown, and should be formatted to fit on the page (config.img.width).
 
 const config = require("../config.json");
-const marked = require("marked");
+const md = require("markdown-it")();
 const puppeteer = require("puppeteer");
 const Jimp = require("jimp");
 
@@ -29,7 +29,7 @@ async function textToImage(textFile) {
 	}
 	// Convert the text/md file to html
 	// remember that textFile is a buffer, so we convert it to a string here
-	let markedhtml = marked(textFile.toString());
+	let markedhtml = md.render(textFile.toString());
 	// Add HTML to properly size the page/text
 	let html = `
 <html>
