@@ -58,6 +58,11 @@ async function textToImage(textFile) {
 	// Note that currently we exclude all other HTML/CSS formatting from the image tags and fix the width to 576px
 	// TODO: preserve HTML/CSS tags (this will require modifying ImageProcessing.js as well, should be simple tbh)
 	for (let i = 0; i < newImages[0].length; i++) {
+		// double check that the image is actually an image
+		if (typeof newImages[0][i] === "String") {
+			// if it's a string, it's an image download error message from parseAndFormatImages, put in HTML
+			html = html.replace(newImages[1][i], `<p><code>${newImages[0][i]}</code></p>`);
+		}
 		html = html.replace(
 			newImages[1][i],
 			`<img src="${newImages[0][i].getBase64(Jimp.MIME_PNG)}" width=${config.img.width}/>`
@@ -73,11 +78,11 @@ async function textToImage(textFile) {
 	return Jimp.read(Buffer.from(screenshot, "base64"));
 }
 
+// this function scans through the input text HTML and checks for any image tags
+// if there are images, download them, format them using ImageProcessing.js, and return the Jimp images
+// returned as a promise that resolves to an array of [images, imgTags], where images is an array of Jimp images
+// and imgTags is an array of the original img tags (for replacing the src with a data URI)
 async function parseAndFormatImages(html) {
-	// scan through the HTML and check for any images
-	// if there are images, download them, format them using ImageProcessing.js, and return the Jimp images + the
-	// original HTML tags
-
 	// Start by getting all the img tags
 	let imgTags = html.match(/<img [^>]*>/g);
 
@@ -99,9 +104,9 @@ async function getImage(imgTag) {
 		let src = imgTag.match(/src="[^"]*"/g);
 		// download the image
 		https.get(src, (response) => {
-			// check that we actually got a response
-			if (response.statusCode !== 200) {
-				reject("Error: Invalid status code: " + response.statusCode + " (Expected 200)");
+			// check that we actually got a successful response
+			if (response.statusCode < 200 || response.statusCode > 299) {
+				reject("Error: Image Download failed, status code: " + response.statusCode);
 			}
 			// check if the response is an image
 			if (response.headers["content-type"].startsWith("image/")) {
@@ -115,7 +120,7 @@ async function getImage(imgTag) {
 				});
 			} else {
 				// if it isn't, reject the promise
-				reject("Error: Not an image");
+				reject("Error: Download URL is not an image");
 			}
 		});
 	});

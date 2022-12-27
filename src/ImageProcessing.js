@@ -5,7 +5,7 @@
 // Formatting includes:
 // - resizing to config.img.width (default is 576 px wide)
 // - converting to black and white (NOT grayscale) using config.img.bwmethod (can be "none", "threshold", or "floyd-steinburg")
-// returned image is a jimp image
+// returned image is a jimp image, or string if there was an error
 
 // splitAndExport(img)
 // Given an image file buffer, split it into multiple images if it exceeds config.img.maxheight
@@ -18,6 +18,14 @@ const config = require("../config.json");
 const Jimp = require("jimp");
 
 async function formatImage(img) {
+	// Validate the image by checking it is a buffer
+	if (!Buffer.isBuffer(img)) {
+		// If the buffer is invalid, return an error message
+		// If a string is passed, return the string since it is probably an error message
+		if (typeof img === "String") return img;
+		return `Error in formatImage: Invalid input, expected buffer, got ${typeof img}`;
+	}
+
 	// Create a Jimp image from the buffer
 	let image = await Jimp.read(img);
 	// Resize the image
