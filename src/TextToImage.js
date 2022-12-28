@@ -125,3 +125,5 @@ async function getImage(imgTag) {
 		});
 	});
 }
+
+module.exports = { textToImage };
