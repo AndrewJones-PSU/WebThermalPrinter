@@ -1,6 +1,8 @@
 {
 	"server": {
-		"port": 3000
+		"port": 3000,
+		"maxFileCount": 10,
+		"maxFileSize": 100000000
 	},
 	"img": {
 		"width": 576,
