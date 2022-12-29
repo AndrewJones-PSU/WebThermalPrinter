@@ -6,10 +6,16 @@ const upload = multer({
 	limits: { files: config.server.maxFileCount, fileSize: config.server.maxFileSize },
 });
 
+const GetPrintableImages = require("../src/GetPrintableImages.js");
+
 function preview(app) {
 	app.get("/preview", upload.any(), (req, res) => {
-		res.status(200);
-		res.send("Preview");
+		// feed files into getPrintableImages
+		GetPrintableImages(req.files).then((images) => {
+			// now send the images to the client
+			res.status(200);
+			res.send(images);
+		});
 	});
 }
 
