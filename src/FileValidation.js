@@ -1,16 +1,25 @@
-// Takes in a string of base64 files separated by commas, validates them, and returns an array of
+// Takes in multer files, validates the files within it, and returns an array of
 // buffers containing the files. If any of the files are invalid, it returns an error.
-function validateFiles(filestr) {
-	// Split the files into an array
-	let files = filestr.split(",");
-	let fileBuffers = [];
-	// Loop through each file
+// TODO: sanitize files in this function as well
+
+// Valid file mime types
+const validMimes = ["image/png", "image/jpeg", "image/jpg", "text/plain"];
+// Valid file extensions for application/octet-stream files
+const validAosExtensions = [".md"];
+
+function validateFiles(files) {
 	for (let i = 0; i < files.length; i++) {
-		// Get buffer from base64 string
-		fileBuffers.push(Buffer.from(files[i], "base64"));
-		// Make sure the file is a base64 file
-		if (fileBuffers[i].toString("base64") !== files[i]) {
-			return { error: "Invalid file type" };
+		if (!validMimes.includes(files[i].mimetype)) {
+			// Check if the file is a markdown file. If not, replace it with an error file.
+			if (!(files[i].mimetype === "application/octet-stream" && files[i].originalname.endsWith(".md"))) {
+				files[i] = {
+					mimetype: "text/plain",
+					buffer: Buffer.from(`
+Uploaded File Error: Invalid file type:\n
+\`${files[i].mimetype}\`\n
+expected one of \`${validMimes.join(", ")}\``),
+				};
+			}
 		}
 	}
 	// Return the array of files
