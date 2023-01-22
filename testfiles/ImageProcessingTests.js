@@ -32,6 +32,7 @@ function validateImageFunctions() {
 			images.push(img);
 		}
 		console.timeEnd("loadingImages");
+		console.log("Loaded " + images.length + " images.");
 
 		// Run images through formatImage(img)
 		// formatImage(img) returns a promise, so we'll promise.all() it

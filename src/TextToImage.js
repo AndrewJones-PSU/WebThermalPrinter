@@ -14,7 +14,7 @@ let page;
 // Initialize the browser and page
 // This is done outside textToImage so that the browser and page are only initialized once
 // initializing the browser and page can take a while (500+ ms in some cases), so this saves a lot of time
-async function init() {
+async function puppeteerInit() {
 	browser = await puppeteer.launch();
 	page = await browser.newPage();
 	await page.setViewport({
@@ -24,10 +24,19 @@ async function init() {
 	console.log("Puppeteer Browser and Page initialized");
 }
 
+// deinit function to close the browser when we want to close the application
+function puppeteerClose() {
+	browser.close().then(() => {
+		browser = null;
+		page = null;
+		console.log("Puppeteer Browser and Page deinitialized");
+	});
+}
+
 async function textToImage(textFile) {
 	// check if the browser and page have been initialized, and if not, initialize them
-	if (!browser || !page) {
-		await init();
+	if (!page) {
+		await puppeteerInit();
 	}
 	// Convert the text/md file to html
 	// remember that textFile is a buffer, so we convert it to a string here
@@ -63,19 +72,29 @@ async function textToImage(textFile) {
 			// if it's a string, it's an image download error message from parseAndFormatImages, put in HTML
 			html = html.replace(newImages[1][i], `<p><code>${newImages[0][i]}</code></p>`);
 		}
-		html = html.replace(
-			newImages[1][i],
-			`<img src="${newImages[0][i].getBase64(Jimp.MIME_PNG)}" width=${config.img.width}/>`
-		);
+		// replace the src with a data URI
+		newImages[0][i].getBase64(Jimp.MIME_PNG, (err, src) => {
+			html = html.replace(newImages[1][i], `<img src="${src}" width=${config.img.width}/>`);
+		});
 	}
 
 	// Render the page to a png
-	// start by setting the page content
-	page.setContent(html);
-	// then take a screenshot
-	screenshot = page.screenshot({ type: "png", fullPage: true, encoding: "base64" });
-	// convert the screenshot to a jimp image and return
-	return Jimp.read(Buffer.from(screenshot, "base64"));
+	// start by setting the page content and waiting for it to load
+	await page.setContent(html);
+	// then take a screenshot, convert to jimp image, and return
+	return new Promise((resolve, reject) => {
+		screenshot = page
+			.screenshot({
+				width: config.img.width,
+				type: "png",
+				fullPage: true,
+				captureBeyondViewport: true,
+				encoding: "binary",
+			})
+			.then((screenshot) => {
+				resolve(Jimp.read(screenshot));
+			});
+	});
 }
 
 // this function scans through the input text HTML and checks for any image tags
@@ -86,6 +105,11 @@ async function parseAndFormatImages(html) {
 	// Start by getting all the img tags
 	let imgTags = html.match(/<img [^>]*>/g);
 
+	// if there are no img tags, return an empty array of 2 empty arrays
+	if (!imgTags) {
+		return [[], []];
+	}
+
 	// map the function to get the images from the img tags
 	let mapping = imgTags.map(getImage);
 
@@ -93,7 +117,10 @@ async function parseAndFormatImages(html) {
 	return Promise.all(mapping).then((images) => {
 		// once the images have downloaded, format them
 		// return them + the original img tags
-		return Promise.all([images.map(ImageProcessing.formatImage), imgTags]);
+		let newmap = images.map(ImageProcessing.formatImage);
+		return Promise.all(newmap).then((newimages) => {
+			return [newimages, imgTags];
+		});
 	});
 }
 
@@ -102,10 +129,13 @@ async function getImage(imgTag) {
 	return new Promise((resolve, reject) => {
 		// Get the src attribute
 		let src = imgTag.match(/src="[^"]*"/g);
+		// Trim off the src tag and array
+		src = src[0].slice(5, -1);
 		// download the image
 		https.get(src, (response) => {
 			// check that we actually got a successful response
 			if (response.statusCode < 200 || response.statusCode > 299) {
+				response.resume();
 				reject("Error: Image Download failed, status code: " + response.statusCode);
 			}
 			// check if the response is an image
@@ -126,4 +156,4 @@ async function getImage(imgTag) {
 	});
 }
 
-module.exports = { textToImage };
+module.exports = { textToImage, puppeteerInit, puppeteerClose };

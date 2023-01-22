@@ -59,4 +59,5 @@ function validateTextFunctions() {
 // Run the function
 validateTextFunctions().then((result) => {
 	console.log(result);
+	TextToImage.puppeteerClose();
 });
