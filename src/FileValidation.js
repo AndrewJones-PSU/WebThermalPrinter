@@ -26,4 +26,4 @@ expected one of \`${validMimes.join(", ")}\``),
 	return files;
 }
 
-module.exports = validateFiles;
+module.exports = { validateFiles };
