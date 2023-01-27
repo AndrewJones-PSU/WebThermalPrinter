@@ -1,7 +1,7 @@
 // Dynamically load in routes from the routes/ directory
 const fs = require("fs");
 
-function dynamicallyLoadRoutes(app) {
+function dynamicallyLoadRoutes(app, multerUpload) {
 	// Read all of the filenames in the current folder, then apply this function
 	//  to each of them
 	fs.readdirSync(__dirname).forEach(function (file) {
@@ -11,7 +11,8 @@ function dynamicallyLoadRoutes(app) {
 		// Let's grab the name of the file
 		let name = file.substr(0, file.indexOf("."));
 		// Add the routes file to the exports
-		require("./" + name)(app);
+		require("./" + name)(app, multerUpload);
+		console.log("Loaded route: " + name);
 	});
 }
 
