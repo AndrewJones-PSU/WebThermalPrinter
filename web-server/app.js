@@ -1,5 +1,5 @@
 const express = require("express");
-const config = require("./config.json");
+const config = require("./../config.json");
 const multer = require("multer");
 const storage = multer.memoryStorage();
 const multerUpload = multer({

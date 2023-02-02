@@ -1,7 +1,7 @@
 // This file tests whether requests to http://localhost:PORT/ are handled correctly.
 // Note: app.js must be running for this to work.
 const http = require("http");
-const config = require("../config.json");
+const config = require("../../config.json");
 const fs = require("fs");
 const formdata = require("form-data");
 
@@ -129,7 +129,7 @@ async function runTests() {
 			console.warn("Note that awakeTest failed, other tests may fail as well");
 		}
 		console.log(await previewNoFilesTest());
-		setTimeout(previewSingleFileTest, 3000);
+		console.log(await previewSingleFileTest());
 	}
 }
 

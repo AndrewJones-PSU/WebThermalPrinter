@@ -12,7 +12,7 @@
 // and reusing them, if that's possible. Not an urgent issue, but something to fix in the future.
 
 // Import modules
-const config = require("../config.json");
+const config = require("../../config.json");
 const fs = require("fs");
 const ImageProcessing = require("../src/ImageProcessing.js");
 
