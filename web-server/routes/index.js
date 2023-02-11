@@ -3,7 +3,7 @@
 function index(app, multerUpload) {
 	app.get("/", (req, res) => {
 		res.status(200);
-		res.send("Service is running");
+		res.send('Service "web-server" is running');
 	});
 }
 
