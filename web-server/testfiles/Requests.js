@@ -51,13 +51,22 @@ async function awakeTest() {
 // returns 0 if successful, 1 on error, 2 on unexpected response
 async function previewNoFilesTest() {
 	return new Promise((resolve, reject) => {
-		let options = {
-			method: "GET",
+		let form = new formdata();
+		//form.append("allfiles", 0);
+		let request = http.request({
+			method: "POST",
 			host: HOST,
-			path: "preview",
+			path: "/preview",
 			port: PORT,
-		};
-		http.get(options, (res) => {
+			headers: form.getHeaders(),
+		});
+
+		form.pipe(request);
+		request.on("error", (err) => {
+			console.error("Error Occured in previewNoFilesTest:" + err);
+			resolve(1);
+		});
+		request.on("response", (res) => {
 			if (res.statusCode === 400) {
 				res.on("data", (d) => {
 					if (d == "Error: No files provided") {
@@ -72,13 +81,16 @@ async function previewNoFilesTest() {
 					}
 				});
 				console.warn("previewNoFilesTest: Server returned correct status (400, Bad Request) but no data");
+				resolve(1);
 			} else {
-				console.warn("previewNoFilesTest: Unexpected status code from server: " + res.statusCode);
+				console.warn(
+					"previewNoFilesTest: Unexpected status code from server: " +
+						res.statusCode +
+						" " +
+						res.statusMessage
+				);
 				resolve(2);
 			}
-		}).on("error", (e) => {
-			console.error("Error Occured in previewNoFilesTest:" + e);
-			resolve(1);
 		});
 	});
 }
@@ -86,50 +98,62 @@ async function previewNoFilesTest() {
 // send a request to /preview with a single file
 // returns 0 if successful, 1 on error, 2 on unexpected response
 async function previewSingleFileTest() {
-	let form = new formdata();
-	form.append("file", fs.createReadStream("jpg/jpgTest1.jpg"));
-	const options = {
-		method: "GET",
-		host: HOST,
-		path: "preview",
-		port: PORT,
-	};
-	form.submit(options, (err, res) => {
-		if (err) {
+	return new Promise((resolve, reject) => {
+		let form = new formdata();
+		form.append("allfiles", fs.createReadStream("jpg/jpgTest1.jpg"));
+		let request = http.request({
+			method: "POST",
+			host: HOST,
+			path: "/preview",
+			port: PORT,
+			headers: form.getHeaders(),
+		});
+
+		form.pipe(request);
+		request.on("error", (err) => {
 			console.error("Error Occured in previewSingleFileTest:" + err);
-			return 1;
-		}
-		if (res.statusCode === 200) {
-			res.on("data", (d) => {
-				// save the data to a file
-				console.log(d);
-				fs.writeFileSync("previewSingleFileTest.jpg", d, (err) => {
-					if (err) {
-						console.error("previewSingleFileTest: Error writing file: " + err);
-						return 1;
-					}
-					console.log("previewSingleFileTest: successful");
-					return 0;
+			resolve(1);
+		});
+		request.on("response", (res) => {
+			if (res.statusCode === 200) {
+				let data = "";
+				res.on("data", (d) => {
+					data += d;
 				});
-			});
-		} else {
-			console.warn("previewSingleFileTest: Unexpected status code from server: " + res.statusCode);
-			return 2;
-		}
+				res.on("end", () => {
+					fs.writeFileSync("output/previewSingleFileTest.txt", data, (err) => {
+						if (err) {
+							console.error("previewSingleFileTest: Error writing file: " + err);
+							resolve(1);
+						}
+					});
+					console.log(
+						"previewSingleFileTest: successful (saved as previewSingleFileTest.txt in testfiles/output)"
+					);
+					resolve(0);
+				});
+			} else {
+				console.warn("previewSingleFileTest: Unexpected status code from server: " + res.statusCode);
+				resolve(2);
+			}
+		});
 	});
 }
 
 // run all tests
 async function runTests() {
 	let awakeTestResult = await awakeTest();
-	console.log(awakeTestResult);
 	if (awakeTestResult == 0 || awakeTestResult == 2) {
 		console.log("Running other tests");
 		if (awakeTestResult == 2) {
 			console.warn("Note that awakeTest failed, other tests may fail as well");
 		}
-		console.log(await previewNoFilesTest());
-		console.log(await previewSingleFileTest());
+		previewNoFilesTest().then((result) => {
+			console.log("previewNoFilesTest: " + result);
+		});
+		previewSingleFileTest().then((result) => {
+			console.log("previewSingleFileTest: " + result);
+		});
 	}
 }
 

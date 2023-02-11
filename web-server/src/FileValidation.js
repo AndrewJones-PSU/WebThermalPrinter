@@ -8,6 +8,9 @@ const validMimes = ["image/png", "image/jpeg", "image/jpg", "text/plain"];
 const validAosExtensions = [".md"];
 
 function validateFiles(files) {
+	if (files.length == 0) {
+		return Error("No files provided");
+	}
 	for (let i = 0; i < files.length; i++) {
 		if (!validMimes.includes(files[i].mimetype)) {
 			// Check if the file is a markdown file. If not, replace it with an error file.

@@ -13,6 +13,9 @@ async function getPrintableImages(files) {
 	}
 	// First, validate all files. If a file is not valid, replace it with a template error txt file.
 	let validFiles = FileValidation.validateFiles(files);
+	if (validFiles instanceof Error) {
+		return Promise.reject(validFiles);
+	}
 
 	// Next, go through all files and convert them to printable images based on their mime type.
 	let mapping = validFiles.map(fileToJimp);
