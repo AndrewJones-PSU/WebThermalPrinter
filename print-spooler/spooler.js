@@ -1,6 +1,12 @@
 // TODO: This should be an https server,
 const express = require("express");
 const config = require("./../config.json");
+const multer = require("multer");
+const storage = multer.memoryStorage();
+const multerUpload = multer({
+	storage: storage,
+	limits: { files: config.server.maxFileCount, fileSize: config.server.maxFileSize },
+});
 
 const app = express();
 app.use(express.json());
