@@ -4,6 +4,9 @@
 		"maxFileCount": 10,
 		"maxFileSize": 100000000
 	},
+	"spooler": {
+		"queueLoopInterval": 1000
+	},
 	"img": {
 		"width": 576,
 		"bwmethod": "floyd-steinberg",
