@@ -24,6 +24,7 @@
     "jimp": "^0.16.2",
     "markdown-it": "^13.0.1",
     "multer": "^1.4.5-lts.1",
-    "puppeteer": "^19.4.1"
+    "puppeteer": "^19.4.1",
+    "rwlock": "^5.0.0"
   }
 }

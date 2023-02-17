@@ -22,6 +22,7 @@ function print(app, multerUpload) {
 			}
 		}
 		// If all files are valid, add them to the spooler queue
+		Spooler.addImagesToQueue(files);
 	});
 }
 

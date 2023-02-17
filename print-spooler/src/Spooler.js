@@ -6,17 +6,22 @@
 const config = require("./config.json");
 const escpos = require("escpos");
 const escposSerial = require("escpos-serialport");
+const rwlock = require("rwlock");
+const Queue = require("/Queue.js");
 
-// addToQueue takes in an image and adds it to the spooler queue
-// WARNING: This function assumes that the image has already been validated
-function addToQueue(image) {}
+let queueLock = new rwlock();
+let queue = new Queue();
 
-// addImagesToQueue takes in an array of images and adds them to the spooler queue
-// WARNING: This function assumes that the images have already been validated
+// addImagesToQueue takes in an array of images and adds them to the spooler queue. Returns true on completion.
+// WARNING: This function assumes that the images have already been validated!
 function addImagesToQueue(images) {
-	for (let i = 0; i < images.length; i++) {
-		addToQueue(images[i]);
-	}
+	queueLock.writeLock((release) => {
+		for (let i = 0; i < images.length; i++) {
+			queue.push(images[i]);
+		}
+		release();
+	});
+	return true;
 }
 
 // startQueueLoop starts the spooler queue loop.
@@ -34,3 +39,5 @@ function queueLoop() {}
 // 3. Prints the image
 // 4. Closes the printer
 function printImage(image) {}
+
+module.exports = { addImagesToQueue, startQueueLoop };
