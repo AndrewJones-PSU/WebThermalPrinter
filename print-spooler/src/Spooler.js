@@ -24,14 +24,38 @@ function addImagesToQueue(images) {
 	return true;
 }
 
-// startQueueLoop starts the spooler queue loop.
-function startQueueLoop() {}
+// startQueueLoop starts the spooler queue loop. This also resets the queue.
+function startQueueLoop() {
+	queueLock.writeLock((release) => {
+		queue = new Queue();
+		release();
+	});
+	queueLoop();
+}
 
-// queueLoop is the main loop of the spooler. It checks if the queue is empty every
+// queueLoop is the main loop of the spooler. It automatically checks if the queue is empty every
 // config.spooler.queueLoopInterval milliseconds and, if not empty, prints the entire queue.
-// This function automatically calls itself every config.spooler.queueLoopInterval milliseconds.
-// Do not call this directly, use startQueueLoop instead.
-function queueLoop() {}
+// This function should never be called directly, use startQueueLoop instead.
+function queueLoop() {
+	queueLock.readLock((release) => {
+		// Print the queue (this function doesn't do anything if the queue is empty)
+		printQueue();
+		// Call this function again in config.spooler.queueLoopInterval milliseconds
+		setTimeout(queueLoop, config.spooler.queueLoopInterval);
+		release();
+	});
+}
+
+// printQueue prints the entire queue. This function assumes we already have a read lock on the queue.
+function printQueue() {
+	while (!queue.isEmpty()) {
+		let image = queue.pop();
+		// check if the image is actually a command
+		// if so, send the cmd, else print image
+		if (image.mimetype == "text/plain") printCMD(image);
+		else printImage(image);
+	}
+}
 
 // printImage prints an image to the printer. More specifically, it:
 // 1. Loads the image into the ESCPOS library
@@ -39,5 +63,11 @@ function queueLoop() {}
 // 3. Prints the image
 // 4. Closes the printer
 function printImage(image) {}
+
+// printCMD sends a command to the printer. More specifically, it:
+// 1. Initializes the printer
+// 2. Sends the command
+// 3. Closes the printer
+function printCMD(cmd) {}
 
 module.exports = { addImagesToQueue, startQueueLoop };

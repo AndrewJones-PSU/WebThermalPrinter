@@ -4,11 +4,17 @@
 // 3. The image is pure black and white (each pixel is either (0,0,0) or (255,255,255))
 // The function returns an array with two elements, the first being a boolean indicating whether the image is valid,
 // and the second being a string containing an error message if the image is invalid.
+// This function also returns true for txt files, which are interpreted as a command (for example, "cut")
 
 const config = require("../config.json");
 const sizeOf = require("image-size");
 
 function validateImage(image) {
+	// Check if the image is a txt file (these files are interpreted as commands)
+	if (image.mimetype === "text/plain") {
+		return [true, "TXT"];
+	}
+
 	// Check that the image is a PNG
 	if (image.mimetype !== "image/png") {
 		return [false, "Not a PNG Image"];
