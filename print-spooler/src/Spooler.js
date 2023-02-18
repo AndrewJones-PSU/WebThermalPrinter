@@ -4,20 +4,47 @@
 // 3. Dealing with the nonsense that is the ESCPOS library
 
 const config = require("./config.json");
-const escpos = require("escpos");
-const escposSerial = require("escpos-serialport");
 const rwlock = require("rwlock");
 const Queue = require("/Queue.js");
+const sizeOf = require("image-size");
+const ThermalPrinterEncoder = require("thermal-printer-encoder");
+const { SerialPort } = require("serialport");
+const { createCanvas, Image } = require("canvas");
 
+// We have two seperate queues, one for image data, another for image dimensions. The lock controls access to both queues.
 let queueLock = new rwlock();
 let queue = new Queue();
+let dimsQueue = new Queue();
+
+const encoder = new ThermalPrinterEncoder({
+	language: "esc/pos",
+});
+
+const port = new SerialPort({
+	path: config.printer.comport,
+	baudRate: config.printer.baudRate,
+});
 
 // addImagesToQueue takes in an array of images and adds them to the spooler queue. Returns true on completion.
 // WARNING: This function assumes that the images have already been validated!
 function addImagesToQueue(images) {
 	queueLock.writeLock((release) => {
 		for (let i = 0; i < images.length; i++) {
-			queue.push(images[i]);
+			// first, check if we're adding an image or a text file
+			if (images[i].mimetype == "text/plain") {
+				// if it's a text file, add it to the queue as a text file
+				queue.push(images[i].buffer);
+			} else {
+				// otherwise, for the image, create a canvas object from it and add it to the queue
+				let dimensions = sizeOf(images[i].buffer);
+				let canvas = createCanvas(dimensions.width, dimensions.height);
+				let ctx = canvas.getContext("2d");
+				let img = new Image();
+				img.onload = () => ctx.drawImage(img, 0, 0);
+				img.src = images[i].buffer;
+				queue.push(img);
+				dimsQueue.push(dimensions);
+			}
 		}
 		release();
 	});
@@ -26,10 +53,16 @@ function addImagesToQueue(images) {
 
 // startQueueLoop starts the spooler queue loop. This also resets the queue.
 function startQueueLoop() {
+	// Reset the queue
 	queueLock.writeLock((release) => {
 		queue = new Queue();
+		dimsQueue = new Queue();
 		release();
 	});
+	// Initialize the printer
+	let result = encoder.initialize().encode();
+	port.write(result);
+	// start the queue loop
 	queueLoop();
 }
 
@@ -48,26 +81,40 @@ function queueLoop() {
 
 // printQueue prints the entire queue. This function assumes we already have a read lock on the queue.
 function printQueue() {
+	if (queue.isEmpty()) return;
 	while (!queue.isEmpty()) {
 		let image = queue.pop();
+		let dimensions = dimsQueue.pop();
 		// check if the image is actually a command
 		// if so, send the cmd, else print image
 		if (image.mimetype == "text/plain") printCMD(image);
-		else printImage(image);
+		else printImage(image, dimensions);
 	}
 }
 
-// printImage prints an image to the printer. More specifically, it:
-// 1. Loads the image into the ESCPOS library
-// 2. Initializes the printer
-// 3. Prints the image
-// 4. Closes the printer
-function printImage(image) {}
+// printImage prints an image to the printer.
+function printImage(image, dimensions) {
+	let result = encoder.image(image, dimensions.width, dimensions.height).encode();
+	port.write(result);
+}
 
-// printCMD sends a command to the printer. More specifically, it:
-// 1. Initializes the printer
-// 2. Sends the command
-// 3. Closes the printer
-function printCMD(cmd) {}
+// printCMD sends a command to the printer. Returns true on completion,
+// false if the command is not recognized.
+function printCMD(cmd) {
+	// cmd is still a file buffer, so we need to convert it to a string
+	text = cmd.toString();
+	// now, we can check if the command is valid and if so, send it to the printer
+	if (text == "cut") {
+		// note that prior to a cut, we need to add a few newlines
+		// the exact number of newlines is defined in config.printer.cutNewlines
+		let result = encoder;
+		for (let i = 0; i < config.printer.cutNewlines; i++) result = result.newline();
+		result = result.cut().encode();
+		port.write(result);
+		return true;
+	}
+	// TODO: Add more commands as needed
+	else return false;
+}
 
 module.exports = { addImagesToQueue, startQueueLoop };
