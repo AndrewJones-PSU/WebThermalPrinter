@@ -4,7 +4,6 @@ const GetPrintableImages = require("../src/GetPrintableImages.js");
 
 function preview(app, multerUpload) {
 	app.post("/preview", multerUpload.array("allfiles"), (req, res) => {
-		console.log(req.files);
 		// feed files into getPrintableImages
 		GetPrintableImages(req.files)
 			.catch((err) => {
