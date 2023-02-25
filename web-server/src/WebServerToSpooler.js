@@ -14,7 +14,7 @@ function sendImagesToSpooler(images) {
 					filesData += fileFormat(images[i][j]);
 				}
 			} else if (images[i] instanceof String || typeof images[i] === "string") {
-				filesData += fileFormat(images[i][j]);
+				filesData += fileFormat(images[i]);
 			} else {
 				throw new Error("Unexpected data type in images array: " + typeof images[i]);
 			}
