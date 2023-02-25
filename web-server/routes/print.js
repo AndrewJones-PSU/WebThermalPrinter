@@ -15,15 +15,18 @@ function print(app, multerUpload) {
 			.then((images) => {
 				if (images === "ERROR") return;
 				// now send the images to the spooler
-				let result = WebServerToSpooler.sendImagesToSpooler(images);
-				if (result === "Success") {
-					res.status(200);
-					res.send("Added " + images.length + " files to the spooler queue");
-				} else {
-					// result is an error message of type Error
-					res.status(500);
-					res.send("Failed to add files to spooler queue: " + result.toString());
-				}
+				WebServerToSpooler.sendImagesToSpooler(images)
+					.catch((err) => {
+						// result is an error message of type Error
+						res.status(500);
+						res.send("Failed to add files to spooler queue: " + result);
+					})
+					.then((result) => {
+						if (result === "Success") {
+							res.status(200);
+							res.send("Added " + images.length + " files to the spooler queue");
+						}
+					});
 			});
 	});
 }
