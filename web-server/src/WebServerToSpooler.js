@@ -33,7 +33,9 @@ function sendImagesToSpooler(images) {
 		});
 		request.on("response", (res) => {
 			if (res.statusCode === 200) {
-				resolve("Success");
+				res.on("data", (d) => {
+					resolve("Success: " + d);
+				});
 			} else {
 				reject("Error sending images to spooler");
 			}

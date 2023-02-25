@@ -19,12 +19,12 @@ function print(app, multerUpload) {
 					.catch((err) => {
 						// result is an error message of type Error
 						res.status(500);
-						res.send("Failed to add files to spooler queue: " + result);
+						res.send("Failed to add files to spooler queue: " + err);
 					})
 					.then((result) => {
-						if (result === "Success") {
+						if (result.substr(0, 7) === "Success") {
 							res.status(200);
-							res.send("Added " + images.length + " files to the spooler queue");
+							res.send(result);
 						}
 					});
 			});
