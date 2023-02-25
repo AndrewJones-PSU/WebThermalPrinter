@@ -8,16 +8,17 @@ const Spooler = require("../src/Spooler.js");
 function print(app, multerUpload) {
 	app.post("/print", multerUpload.array("files"), async (req, res) => {
 		// Validate files
-		let files = req.files;
+		// start by splitting files by newline
+		let files = req.body.files.split("\n");
+		// remove empty lines
+		files = files.filter((line) => line !== "");
 		// Validate each file, and send an error if any are invalid
 		for (let i = 0; i < files.length; i++) {
 			// For each file, check if it is valid
 			if (!ImageValidation.validateImage(files[i])[0]) {
 				// If the file is invalid, send an error and return
 				res.status(400);
-				res.send(
-					"Invalid file: " + files[i].originalname + " (" + ImageValidation.validateImage(files[i])[1] + ")"
-				);
+				res.send("File " + i + " is Invalid (" + ImageValidation.validateImage(files[i])[1] + ")");
 				return;
 			}
 		}

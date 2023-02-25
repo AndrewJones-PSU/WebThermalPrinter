@@ -31,17 +31,19 @@ function addImagesToQueue(images) {
 	queueLock.writeLock((release) => {
 		for (let i = 0; i < images.length; i++) {
 			// first, check if we're adding an image or a text file
-			if (images[i].mimetype == "text/plain") {
-				// if it's a text file, add it to the queue as a text file
-				queue.push(images[i].buffer);
+			if (images[i].substr(0, 15) === "data:text/plain") {
+				// if it's a text file, add it to the queue as plain text
+				queue.push(Buffer.from(images[i].substr(23), "base64").toString());
+				dimsQueue.push({ width: 0, height: 0 });
 			} else {
 				// otherwise, for the image, create a canvas object from it and add it to the queue
-				let dimensions = sizeOf(images[i].buffer);
+				let imageBuffer = Buffer.from(images[i].substr(22), "base64");
+				let dimensions = sizeOf(imageBuffer);
 				let canvas = createCanvas(dimensions.width, dimensions.height);
 				let ctx = canvas.getContext("2d");
 				let img = new Image();
 				img.onload = () => ctx.drawImage(img, 0, 0);
-				img.src = images[i].buffer;
+				img.src = imageBuffer;
 				queue.push(img);
 				dimsQueue.push(dimensions);
 			}
@@ -87,7 +89,7 @@ function printQueue() {
 		let dimensions = dimsQueue.pop();
 		// check if the image is actually a command
 		// if so, send the cmd, else print image
-		if (image.mimetype == "text/plain") printCMD(image);
+		if (typeof image === "string") printCMD(image);
 		else printImage(image, dimensions);
 	}
 }
@@ -100,11 +102,9 @@ function printImage(image, dimensions) {
 
 // printCMD sends a command to the printer. Returns true on completion,
 // false if the command is not recognized.
-function printCMD(cmd) {
-	// cmd is still a file buffer, so we need to convert it to a string
-	text = cmd.toString();
+function printCMD(text) {
 	// now, we can check if the command is valid and if so, send it to the printer
-	if (text == "cut") {
+	if (text == "CUT") {
 		// note that prior to a cut, we need to add a few newlines
 		// the exact number of newlines is defined in config.printer.cutNewlines
 		let result = encoder;

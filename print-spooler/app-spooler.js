@@ -8,6 +8,7 @@ const multerUpload = multer({
 	storage: storage,
 	limits: { files: config.server.maxFileCount, fileSize: config.server.maxFileSize },
 });
+const Spooler = require("./src/Spooler.js");
 
 const app = express();
 app.use(express.json());
@@ -20,3 +21,6 @@ if (!PORT) throw new Error("PORT is not defined in env.json");
 app.listen(PORT, () => {
 	console.log(`Spooler is running on port ${PORT}`);
 });
+
+// start the spooler queue loop
+Spooler.startQueueLoop();

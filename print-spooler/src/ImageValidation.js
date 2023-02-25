@@ -8,19 +8,23 @@
 
 const config = require("../../config.json");
 const sizeOf = require("image-size");
+const { createCanvas, Image } = require("canvas");
 
 function validateImage(image) {
 	// Check if the image is a txt file (these files are interpreted as commands)
-	if (image.mimetype === "text/plain") {
+	if (image.substr(0, 15) === "data:text/plain") {
 		return [true, "TXT"];
 	}
 
 	// Check that the image is a PNG
-	if (image.mimetype !== "image/png") {
+	if (image.substr(0, 14) !== "data:image/png") {
 		return [false, "Not a PNG Image"];
 	}
+
+	// Convert the image to a buffer
+	let imageBuffer = Buffer.from(image.substr(22), "base64");
 	// Get image dimensions
-	let imageDims = sizeOf(image.path);
+	let imageDims = sizeOf(imageBuffer);
 
 	// Check that the image is the proper width and is not too tall
 	if (imageDims.width != config.img.width) {
@@ -32,12 +36,12 @@ function validateImage(image) {
 
 	// Check that the image is pure black and white
 	// Start by creating a canvas and drawing the image on it
-	var canvas = document.createElement("canvas");
-	canvas.width = imageDims.width;
-	canvas.height = imageDims.height;
-	var context = canvas.getContext("2d");
-	context.drawImage(image, 0, 0);
-	var imageData = context.getImageData(0, 0, image.width, image.height);
+	let canvas = createCanvas(imageDims.width, imageDims.height);
+	let ctx = canvas.getContext("2d");
+	let img = new Image();
+	img.onload = () => ctx.drawImage(img, 0, 0);
+	img.src = imageBuffer;
+	var imageData = ctx.getImageData(0, 0, imageDims.width, imageDims.height);
 	var data = imageData.data;
 	// Check that each pixel is either (0,0,0) or (255,255,255)
 	for (var i = 0; i < data.length; i += 4) {

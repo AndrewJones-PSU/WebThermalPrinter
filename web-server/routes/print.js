@@ -22,6 +22,9 @@ function print(app, multerUpload) {
 						res.send("Failed to add files to spooler queue: " + err);
 					})
 					.then((result) => {
+						// check that result isn't undefined
+						if (result === undefined) return;
+						// result is a string
 						if (result.substr(0, 7) === "Success") {
 							res.status(200);
 							res.send(result);
