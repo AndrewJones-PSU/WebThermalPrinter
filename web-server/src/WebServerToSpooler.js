@@ -39,7 +39,9 @@ function sendImagesToSpooler(images) {
 					resolve("Success: " + d);
 				});
 			} else {
-				reject("Error sending images to spooler");
+				res.on("data", (d) => {
+					reject("Bad response sending images to spooler. (Status code: " + res.statusCode + ") " + d);
+				});
 			}
 		});
 	});
