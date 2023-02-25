@@ -12,7 +12,7 @@ function sendImagesToSpooler(images) {
 			for (let j = 0; j < images[i].length; j++) {
 				form.append("files", fileFormat(images[i][j]));
 			}
-		} else if (images[i] instanceof String) {
+		} else if (images[i] instanceof String || typeof images[i] === "string") {
 			form.append("files", fileFormat(images[i]));
 		} else {
 			throw new Error("Unexpected data type in images array: " + typeof images[i]);
@@ -47,7 +47,7 @@ function fileFormat(image) {
 		return image;
 	}
 	// if the image is a string, convert it to a string buffer
-	else if (image instanceof String) {
+	else if (image instanceof String || typeof image === "string") {
 		return Buffer.from(image);
 	}
 	// otherwise, throw an error

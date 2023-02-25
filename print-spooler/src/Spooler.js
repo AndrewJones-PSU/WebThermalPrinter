@@ -3,9 +3,9 @@
 // 2. Sending files from the queue to the printer
 // 3. Dealing with the nonsense that is the ESCPOS library
 
-const config = require("./config.json");
+const config = require("../../config.json");
 const rwlock = require("rwlock");
-const Queue = require("/Queue.js");
+const Queue = require("./Queue.js");
 const sizeOf = require("image-size");
 const ThermalPrinterEncoder = require("thermal-printer-encoder");
 const { SerialPort } = require("serialport");
@@ -17,12 +17,12 @@ let queue = new Queue();
 let dimsQueue = new Queue();
 
 const encoder = new ThermalPrinterEncoder({
-	language: "esc/pos",
+	language: "esc-pos",
 });
 
 const port = new SerialPort({
 	path: config.printer.comport,
-	baudRate: config.printer.baudRate,
+	baudRate: config.printer.baudrate,
 });
 
 // addImagesToQueue takes in an array of images and adds them to the spooler queue. Returns true on completion.
