@@ -81,7 +81,7 @@ async function textToImage(textFile) {
 	// Render the page to a png
 	// start by setting the page content and waiting for it to load
 	await page.setContent(html);
-	// then take a screenshot, convert to jimp image, and return
+	// then take a screenshot, convert to jimp image, threshold, and return
 	return new Promise((resolve, reject) => {
 		screenshot = page
 			.screenshot({
@@ -92,7 +92,10 @@ async function textToImage(textFile) {
 				encoding: "binary",
 			})
 			.then((screenshot) => {
-				resolve(Jimp.read(screenshot));
+				Jimp.read(screenshot).then((image) => {
+					image.threshold();
+					resolve(image);
+				});
 			});
 	});
 }
