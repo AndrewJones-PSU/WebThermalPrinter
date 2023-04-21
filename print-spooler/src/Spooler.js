@@ -39,6 +39,8 @@ function addImagesToQueue(images) {
 				// otherwise, for the image, create a canvas object from it and add it to the queue
 				let imageBuffer = Buffer.from(images[i].substr(22), "base64");
 				let dimensions = sizeOf(imageBuffer);
+				// create a canvas such that height is a multiple of 8
+				dimensions.height = Math.ceil(dimensions.height / 8) * 8;
 				let canvas = createCanvas(dimensions.width, dimensions.height);
 				let ctx = canvas.getContext("2d");
 				let img = new Image();
