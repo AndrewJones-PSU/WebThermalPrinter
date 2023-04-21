@@ -1,7 +1,6 @@
 const env = require("../../env.json");
 const http = require("http");
 const formdata = require("form-data");
-const Readable = require("stream").Readable;
 
 function sendImagesToSpooler(images) {
 	return new Promise((resolve, reject) => {
@@ -13,8 +12,10 @@ function sendImagesToSpooler(images) {
 			if (images[i] instanceof Array) {
 				for (let j = 0; j < images[i].length; j++) {
 					// for each image, add it to the form
-					// use Readable to allow the buffer to be readable
-					form.append("files", fs.createReadStream(Readable.from(images[i][j])));
+					form.append("files", images[i][j], {
+						filename: `image${i}-${j}.jpg`,
+						contentType: "image/jpeg",
+					});
 					// old method
 					filesData += fileFormat(images[i][j]);
 				}

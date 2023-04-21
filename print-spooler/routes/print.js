@@ -7,8 +7,11 @@ const Spooler = require("../src/Spooler.js");
 // 2: It adds the files to the spooler queue using src/Spooler.js
 function print(app, multerUpload) {
 	app.post("/print", multerUpload.array("files"), async (req, res) => {
+		let files = [];
 		// First, convert files to base64 strings
-		let files = req.files.map((file) => RequestValidation.bufferToBase64(file.buffer));
+		for (let i = 0; i < req.files.length; i++) {
+			files.push(RequestValidation.bufferToBase64(req.files[i].buffer));
+		}
 		// Append a cut command to the end of the files
 		files.push("data:text/plain,base64:Q1VU");
 
