@@ -1,6 +1,7 @@
 const env = require("../../env.json");
 const http = require("http");
 const formdata = require("form-data");
+const Readable = require("stream").Readable;
 
 function sendImagesToSpooler(images) {
 	return new Promise((resolve, reject) => {
@@ -11,16 +12,22 @@ function sendImagesToSpooler(images) {
 			// check if images[i] is an array
 			if (images[i] instanceof Array) {
 				for (let j = 0; j < images[i].length; j++) {
+					// for each image, add it to the form
+					// use Readable to allow the buffer to be readable
+					form.append("files", fs.createReadStream(Readable.from(images[i][j])));
+					// old method
 					filesData += fileFormat(images[i][j]);
 				}
 			} else if (images[i] instanceof String || typeof images[i] === "string") {
+				// old method (this should never run)
 				filesData += fileFormat(images[i]);
 			} else {
 				throw new Error("Unexpected data type in images array: " + typeof images[i]);
 			}
 		}
-		// Add the form data to the form
-		form.append("files", filesData);
+		// Add the form data to the form (old method)
+		// form.append("files", filesData);
+
 		// Send the form to the spooler
 		let request = http.request({
 			method: "POST",

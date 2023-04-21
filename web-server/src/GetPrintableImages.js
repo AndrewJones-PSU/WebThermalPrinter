@@ -25,11 +25,11 @@ async function getPrintableImages(files) {
 
 		return Promise.all(exportMapping).then((buffers) => {
 			// After all images are exported, append a cut command to the end of the array, then return
-			buffers.push("CUT");
+			// Cutting this out since we're changing the spooler to automatically cut after each set of images
+			// buffers.push("CUT");
 			return buffers;
 		});
 	});
-	//
 }
 
 // Takes a file and returns a promise that resolves to a Jimp image

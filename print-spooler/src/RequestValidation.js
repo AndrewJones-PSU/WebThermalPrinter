@@ -1,4 +1,8 @@
-// This file has one primary function: take in a file and validate they satisfy the following criteria:
+// This file has two primary functions:
+//
+// A: Take in an array of image buffers and encode them into base64 strings
+//
+// B: take in a file and validate they satisfy the following criteria:
 // 1. It is a PNG image
 // 2. The image is at most config.img.width x config.img.maxheight in size
 // The function returns an array with two elements, the first being a boolean indicating whether the image is valid,
@@ -7,7 +11,10 @@
 
 const config = require("../../config.json");
 const sizeOf = require("image-size");
-const { createCanvas, Image } = require("canvas");
+
+function bufferToBase64(buffer) {
+	return "data:image/png;base64," + buffer.toString("base64");
+}
 
 function validateImage(image) {
 	// Check if the image is a txt file (these files are interpreted as commands)
@@ -35,4 +42,4 @@ function validateImage(image) {
 	return [true, "OK"];
 }
 
-module.exports = { validateImage };
+module.exports = { bufferToBase64, validateImage };
