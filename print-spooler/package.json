@@ -1,0 +1,28 @@
+{
+	"name": "webthermalprinter-printspooler",
+	"version": "1.0.0",
+	"description": "A node.js application acting as a print spooler for a thermal receipt printer. Tuned for the Epson TM-T20ii printer. Designed to work in conjunction with webthermalprinter-webserver",
+	"main": "app-spooler.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AndrewJones-PSU/WebThermalPrinter.git"
+	},
+	"author": "AndrewJones-PSU",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/AndrewJones-PSU/WebThermalPrinter/issues"
+	},
+	"homepage": "https://github.com/AndrewJones-PSU/WebThermalPrinter#readme",
+	"dependencies": {
+		"canvas": "^2.11.0",
+		"express": "^4.18.2",
+		"image-size": "^1.0.2",
+		"multer": "^1.4.5-lts.1",
+		"rwlock": "^5.0.0",
+		"serialport": "^10.5.0",
+		"thermal-printer-encoder": "^1.0.0"
+	}
+}
