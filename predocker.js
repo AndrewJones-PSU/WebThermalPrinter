@@ -21,3 +21,4 @@ subdirs.forEach((subdir) => {
 });
 
 console.log("Done");
+
