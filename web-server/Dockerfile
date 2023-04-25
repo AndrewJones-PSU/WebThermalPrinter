@@ -11,7 +11,4 @@ RUN npm install --production
 
 COPY . .
 
-COPY ./../config.json ./config.json
-COPY ./../env.json ./env.json
-
 CMD ["node", "app-server.js"]
