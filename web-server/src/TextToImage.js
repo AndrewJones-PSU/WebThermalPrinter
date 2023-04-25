@@ -1,7 +1,7 @@
 // Given a text or markdown file buffer, format it for printing, render it to a png, and return a jimp image of the png.
 // the rendered text should appropriate interpret markdown, and should be formatted to fit on the page (config.img.width).
 
-const config = require("../../config.json");
+const config = require("/config.json");
 const md = require("markdown-it")();
 const puppeteer = require("puppeteer");
 const Jimp = require("jimp");

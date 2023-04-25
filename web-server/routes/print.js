@@ -1,4 +1,4 @@
-const config = require("../../config.json");
+const config = require("/config.json");
 
 const GetPrintableImages = require("../src/GetPrintableImages.js");
 const WebServerToSpooler = require("../src/WebServerToSpooler.js");

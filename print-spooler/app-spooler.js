@@ -1,7 +1,20 @@
-// TODO: This should be an https server,
+// TODO: This should be an https server
+
+// check if dev environment, if so, import config.json and env.json from parent directory
+// (in production, these files are imported by the build script, but in development,
+// we want to be able to edit them without having to copy the file to
+// every subdirectory that needs it).
+
+if (process.env.NODE_ENV === "development") {
+	const fs = require("fs");
+	console.log("Dev environment detected, copying configs from parent directory");
+	fs.copyFileSync("./../config.json", "./config.json");
+	fs.copyFileSync("./../env.json", "./env.json");
+}
+
 const express = require("express");
-const config = require("./../config.json");
-const env = require("./../env.json");
+const config = require("./config.json");
+const env = require("./env.json");
 const multer = require("multer");
 const storage = multer.memoryStorage();
 const multerUpload = multer({
