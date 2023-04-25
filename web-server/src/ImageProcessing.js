@@ -14,7 +14,7 @@
 // This function is used to split images that are too tall for the printer to handle + remove the jimp dependency
 
 // Import modules
-const config = require("/config.json");
+const config = require("./../config.json");
 const Jimp = require("jimp");
 
 async function formatImage(img) {

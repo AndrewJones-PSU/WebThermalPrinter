@@ -3,7 +3,7 @@
 // we want to be able to edit them without having to copy the file to
 // every subdirectory that needs it).
 
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV !== "production") {
 	const fs = require("fs");
 	console.log("Dev environment detected, copying configs from parent directory");
 	fs.copyFileSync("./../config.json", "./config.json");

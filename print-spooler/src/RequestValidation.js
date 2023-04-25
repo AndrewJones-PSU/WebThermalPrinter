@@ -9,7 +9,7 @@
 // and the second being a string containing an error message if the image is invalid.
 // This function also returns true for txt files, which are interpreted as a command (for example, "cut")
 
-const config = require("/config.json");
+const config = require("./../config.json");
 const sizeOf = require("image-size");
 
 function bufferToBase64(buffer) {

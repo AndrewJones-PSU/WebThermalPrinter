@@ -2,3 +2,4 @@
 node_modules
 web-server/testfiles/output
 env.json
+/*/config.json

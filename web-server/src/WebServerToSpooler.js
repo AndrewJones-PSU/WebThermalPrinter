@@ -1,4 +1,4 @@
-const env = require("/env.json");
+const env = require("./../env.json");
 const http = require("http");
 const formdata = require("form-data");
 

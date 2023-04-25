@@ -1,4 +1,4 @@
-const config = require("/config.json");
+const config = require("./../config.json");
 const RequestValidation = require("../src/RequestValidation.js");
 const Spooler = require("../src/Spooler.js");
 
