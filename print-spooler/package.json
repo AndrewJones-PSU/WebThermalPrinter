@@ -17,7 +17,7 @@
 	},
 	"homepage": "https://github.com/AndrewJones-PSU/WebThermalPrinter#readme",
 	"dependencies": {
-		"canvas": "^2.11.0",
+		"canvas": "^2.11.2",
 		"express": "^4.18.2",
 		"image-size": "^1.0.2",
 		"multer": "^1.4.5-lts.1",
