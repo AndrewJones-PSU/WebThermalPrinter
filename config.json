@@ -1,6 +1,5 @@
 {
 	"server": {
-		"port": 3000,
 		"maxFileCount": 10,
 		"maxFileSize": 100000000
 	},

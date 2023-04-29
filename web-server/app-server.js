@@ -26,7 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 // Dynamically import routes
 require("./routes/routeloader")(app, multerUpload);
 
-const PORT = config.server.port;
+const PORT = env.webPort;
 if (!PORT) throw new Error("PORT is not defined in config.json");
 app.listen(PORT, () => {
 	console.log(`Server is running on port ${PORT}`);
