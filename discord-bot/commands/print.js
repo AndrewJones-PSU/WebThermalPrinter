@@ -117,9 +117,11 @@ function sendToWebServer(form, interaction) {
 				ephemeral: false,
 			});
 		} else {
-			interaction.reply({
-				content: `Error printing file\n\n${res}`,
-				ephemeral: true,
+			res.on("data", (data) => {
+				interaction.reply({
+					content: `Error printing file\n\n${data}`,
+					ephemeral: true,
+				});
 			});
 		}
 	});
