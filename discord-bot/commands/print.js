@@ -38,7 +38,7 @@ module.exports = {
 			});
 		}
 		// if file, append it to the form
-		let request;
+
 		if (file) {
 			// get the file mimetype
 			let contentType = file.contentType;
@@ -51,46 +51,37 @@ module.exports = {
 				return;
 			}
 			// download the file and append it to the form
-			let url = file.url;
-			// for now, just print out the URL
-
-			form.append("allfiles", Buffer.from(url), {
-				filename: "url.txt",
-				contentType: "text/plain",
+			let src = file.url;
+			// download the image
+			https.get(src, (response) => {
+				// check that we actually got a successful response
+				if (response.statusCode < 200 || response.statusCode > 299) {
+					response.resume();
+					interaction.reply({
+						content: `Error: Image Download failed, status code: ${response.statusCode}`,
+						ephemeral: true,
+					});
+					return;
+				}
+				// now that we know we got a successful response, download the file
+				let chunks = [];
+				response.on("data", (chunk) => {
+					chunks.push(chunk);
+				});
+				response.on("end", () => {
+					form.append("allfiles", Buffer.concat(chunks), {
+						filename: file.name,
+						contentType: contentType,
+					});
+					sendToWebServer(form, interaction);
+				});
 			});
-			// request = https.request(url, (res) => {
-			// 	let data = [];
-			// 	res.on("data", (chunk) => {
-			// 		data.push(chunk);
-			// 	});
-			// 	res.on("end", () => {
-			// 		let buffer = Buffer.concat(data);
-			// 		form.append("allfiles", buffer, {
-			// 			filename: file.name,
-			// 			contentType: contentType,
-			// 		});
-			// 	});
-			// });
-			// request.on("error", (err) => {
-			// 	interaction.reply({
-			// 		content: `Error downloading file\n\n${err}`,
-			// 		ephemeral: true,
-			// 	});
-			// 	console.error(err);
-			// });
 		}
-
 		// if we didn't download a file, send the form to the web server
-		//		if (!file) {
-		sendToWebServer(form, interaction);
-		return;
-		//		}
-
-		// otherwise, after downloading the file, send the form to the web server
-		request.on("close", () => {
+		else {
 			sendToWebServer(form, interaction);
 			return;
-		});
+		}
 	},
 };
 
