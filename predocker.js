@@ -10,9 +10,8 @@
 // Run this from the root directory, not the docker directory.
 
 const fs = require("fs");
-const path = require("path");
 
-const subdirs = ["web-server", "print-spooler"];
+const subdirs = ["web-server", "print-spooler", "discord-bot"];
 
 // copy the files into each subdirectory
 subdirs.forEach((subdir) => {
@@ -21,4 +20,3 @@ subdirs.forEach((subdir) => {
 });
 
 console.log("Done");
-
