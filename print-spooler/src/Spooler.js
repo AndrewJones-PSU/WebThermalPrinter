@@ -3,7 +3,7 @@
 // 2. Sending files from the queue to the printer
 // 3. Dealing with the nonsense that is the ESCPOS library
 
-const config = require("../../config.json");
+const config = require("./../config.json");
 const rwlock = require("rwlock");
 const Queue = require("./Queue.js");
 const sizeOf = require("image-size");
