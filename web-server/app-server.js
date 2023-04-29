@@ -12,6 +12,7 @@ if (process.env.NODE_ENV !== "production") {
 
 const express = require("express");
 const config = require("./config.json");
+const env = require("./env.json");
 const multer = require("multer");
 const storage = multer.memoryStorage();
 const multerUpload = multer({

@@ -6,7 +6,7 @@ const { REST } = require("@discordjs/rest");
 const env = require("./../env.json");
 
 const commands = [];
-const commandsPath = "./";
+const commandsPath = path.join(__dirname, "/");
 const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".js") && file !== "register.js");
 
 for (const file of commandFiles) {
@@ -17,10 +17,10 @@ for (const file of commandFiles) {
 
 console.log(commands);
 
-const rest = new REST({ version: "10" }).setToken(env.BOT_TOKEN);
+const rest = new REST({ version: "10" }).setToken(env.discordBotToken);
 
 Routes.applicationCommands;
 
-rest.put(Routes.applicationGuildCommands(env.BOT_ID, env.DEV_GUILD_ID), { body: commands })
+rest.put(Routes.applicationGuildCommands(env.discordBotID, env.discordDevGuildID), { body: commands })
 	.then((data) => console.log(`Successfully registered ${data.length} application commands.`))
 	.catch(console.error);

@@ -1,7 +1,8 @@
-const { SlashCommandBuilder } = require("@discordjs");
+const { SlashCommandBuilder } = require("discord.js");
 const http = require("http");
 const https = require("https");
 const formdata = require("form-data");
+const env = require("./../env.json");
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -51,36 +52,44 @@ module.exports = {
 			}
 			// download the file and append it to the form
 			let url = file.url;
-			request = https.request(url, (res) => {
-				let data = [];
-				res.on("data", (chunk) => {
-					data.push(chunk);
-				});
-				res.on("end", () => {
-					let buffer = Buffer.concat(data);
-					form.append("allfiles", buffer, {
-						filename: file.name,
-						contentType: contentType,
-					});
-				});
+			// for now, just print out the URL
+
+			form.append("allfiles", Buffer.from(url), {
+				filename: "url.txt",
+				contentType: "text/plain",
 			});
-			request.on("error", (err) => {
-				interaction.reply({
-					content: `Error downloading file\n\n${err}`,
-					ephemeral: true,
-				});
-				console.error(err);
-			});
+			// request = https.request(url, (res) => {
+			// 	let data = [];
+			// 	res.on("data", (chunk) => {
+			// 		data.push(chunk);
+			// 	});
+			// 	res.on("end", () => {
+			// 		let buffer = Buffer.concat(data);
+			// 		form.append("allfiles", buffer, {
+			// 			filename: file.name,
+			// 			contentType: contentType,
+			// 		});
+			// 	});
+			// });
+			// request.on("error", (err) => {
+			// 	interaction.reply({
+			// 		content: `Error downloading file\n\n${err}`,
+			// 		ephemeral: true,
+			// 	});
+			// 	console.error(err);
+			// });
 		}
 
 		// if we didn't download a file, send the form to the web server
-		if (!file) {
-			sendToWebServer(form, interaction);
-		}
+		//		if (!file) {
+		sendToWebServer(form, interaction);
+		return;
+		//		}
 
 		// otherwise, after downloading the file, send the form to the web server
 		request.on("close", () => {
 			sendToWebServer(form, interaction);
+			return;
 		});
 	},
 };
@@ -101,7 +110,7 @@ function sendToWebServer(form, interaction) {
 		});
 		console.error(res);
 	});
-	request.on("response", () => {
+	request.on("response", (res) => {
 		if (res.statusCode === 200) {
 			interaction.reply({
 				content: "Successfully printed!",
