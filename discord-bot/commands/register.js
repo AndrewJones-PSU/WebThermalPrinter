@@ -1,4 +1,5 @@
 // This is not a command, but a function that registers slash commands to the Discord API.
+// This is run on docker build, and should only be run manually if you need to update accepted guilds.
 const fs = require("fs");
 const path = require("path");
 const { Routes } = require("discord.js");
@@ -21,6 +22,6 @@ const rest = new REST({ version: "10" }).setToken(env.discordBotToken);
 
 Routes.applicationCommands;
 
-rest.put(Routes.applicationGuildCommands(env.discordBotID, env.discordDevGuildID), { body: commands })
+rest.put(Routes.applicationCommands(env.discordBotID), { body: commands })
 	.then((data) => console.log(`Successfully registered ${data.length} application commands.`))
 	.catch(console.error);
