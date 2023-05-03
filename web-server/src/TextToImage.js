@@ -19,7 +19,7 @@ async function puppeteerInit() {
 	page = await browser.newPage();
 	await page.setViewport({
 		width: config.img.width,
-		height: 0,
+		height: 1,
 	});
 	console.log("Puppeteer Browser and Page initialized");
 }
