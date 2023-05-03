@@ -17,11 +17,12 @@ module.exports = {
 		),
 
 	async execute(interaction) {
+		await interaction.deferReply({ ephemeral: true });
 		const message = interaction.options.getString("message");
 		const file = interaction.options.getAttachment("file");
 		// sanity check that the user didn't send either option
 		if (!message && !file) {
-			await interaction.reply({
+			await interaction.editReply({
 				content: "No content provided, you must provide a message and/or file to print",
 				ephemeral: true,
 			});
@@ -43,12 +44,20 @@ module.exports = {
 			// get the file mimetype
 			let contentType = file.contentType;
 			// if the file is not a png, jpeg, txt, or md file, throw an error
-			if (!["image/png", "image/jpeg", "text/plain", "text/markdown"].includes(contentType)) {
-				await interaction.reply({
-					content: "Invalid file type, only .png .jpeg .txt and .md files are supported",
+			if (
+				!["image/png", "image/jpeg", "text/plain; charset=utf-8", "text/markdown; charset=utf-8"].includes(
+					contentType
+				)
+			) {
+				await interaction.editReply({
+					content: `Invalid file type, only .png .jpeg .txt and .md files are supported. Type sent: ${contentType}`,
 					ephemeral: true,
 				});
 				return;
+			}
+			// if the file is a markdown file, change the mimetype to text/plain (web server bugs out with text/markdown)
+			if (contentType === "text/markdown; charset=utf-8") {
+				contentType = "text/plain; charset=utf-8";
 			}
 			// download the file and append it to the form
 			let src = file.url;
@@ -57,7 +66,7 @@ module.exports = {
 				// check that we actually got a successful response
 				if (response.statusCode < 200 || response.statusCode > 299) {
 					response.resume();
-					interaction.reply({
+					interaction.editReply({
 						content: `Error: Image Download failed, status code: ${response.statusCode}`,
 						ephemeral: true,
 					});
@@ -95,7 +104,7 @@ function sendToWebServer(form, interaction) {
 	});
 	form.pipe(request);
 	request.on("error", (res) => {
-		interaction.reply({
+		interaction.editReply({
 			content: `Error sending file to web server\n\n${res}`,
 			ephemeral: true,
 		});
@@ -103,13 +112,13 @@ function sendToWebServer(form, interaction) {
 	});
 	request.on("response", (res) => {
 		if (res.statusCode === 200) {
-			interaction.reply({
+			interaction.editReply({
 				content: "Successfully printed!",
 				ephemeral: false,
 			});
 		} else {
 			res.on("data", (data) => {
-				interaction.reply({
+				interaction.editReply({
 					content: `Error printing file\n\n${data}`,
 					ephemeral: true,
 				});
