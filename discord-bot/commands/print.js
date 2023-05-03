@@ -82,19 +82,19 @@ module.exports = {
 						filename: file.name,
 						contentType: contentType,
 					});
-					sendToWebServer(form, interaction);
+					sendToWebServer(form, interaction, file, message, contentType);
 				});
 			});
 		}
 		// if we didn't download a file, send the form to the web server
 		else {
-			sendToWebServer(form, interaction);
+			sendToWebServer(form, interaction, file, message, null);
 			return;
 		}
 	},
 };
 
-function sendToWebServer(form, interaction) {
+function sendToWebServer(form, interaction, file, message, contentType) {
 	let request = http.request({
 		method: "POST",
 		host: env.webIP,
@@ -112,8 +112,17 @@ function sendToWebServer(form, interaction) {
 	});
 	request.on("response", (res) => {
 		if (res.statusCode === 200) {
-			interaction.editReply({
-				content: "Successfully printed!",
+			interaction.deleteReply();
+			let interactionmessage;
+			if (file && message) {
+				interactionmessage = `${interaction.user} Successfully printed a message and a ${contentType} file!`;
+			} else if (file) {
+				interactionmessage = `${interaction.user} Successfully printed a ${contentType} file!`;
+			} else {
+				interactionmessage = `${interaction.user} Successfully printed a message!`;
+			}
+			interaction.followUp({
+				content: interactionmessage,
 				ephemeral: false,
 			});
 		} else {
