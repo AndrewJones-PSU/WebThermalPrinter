@@ -31,13 +31,14 @@ module.exports = {
 
 		// take the message and/or file, and send it to the web server
 		let form = new formdata();
-		// if message, turn it into a text file buffer and append it to the form
-		if (message) {
-			form.append("allfiles", Buffer.from(message), {
-				filename: "message.txt",
-				contentType: "text/plain",
-			});
-		}
+
+		// append username, then go through and replace all instances of \n with a newline character
+		let sendmessage = `${getTimeFromStamp(interaction.createdTimestamp)} - ${interaction.user.tag}:\n\n`;
+		if (message) sendmessage += message.replace(/\\n/g, "\n\n");
+		form.append("allfiles", Buffer.from(sendmessage), {
+			filename: "message.txt",
+			contentType: "text/plain",
+		});
 		// if file, append it to the form
 
 		if (file) {
@@ -134,4 +135,16 @@ function sendToWebServer(form, interaction, file, message, contentType) {
 			});
 		}
 	});
+}
+
+// returns the time in the format DD/MM/YYYY HH:MM:SS
+function getTimeFromStamp(stamp) {
+	let date = new Date(stamp);
+	let day = date.getDate();
+	let month = date.getMonth() + 1;
+	let year = date.getFullYear();
+	let hours = date.getHours();
+	let minutes = date.getMinutes();
+	let seconds = date.getSeconds();
+	return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
 }

@@ -31,8 +31,9 @@ for (const file of commandFiles) {
 
 // Display a message when the bot is ready
 client.once("ready", () => {
+	client.user;
+	client.user.setActivity("some activity", { type: "WATCHING" });
 	console.log("Ready!");
-	client.user.setActivity("/help", { type: 4 });
 });
 
 // Handle slash commands whenever they are used
@@ -52,7 +53,7 @@ client.on("interactionCreate", async (interaction) => {
 				content: `There was an error while executing this command!\n\n${error}`,
 				ephemeral: true,
 			});
-		} catch (error) {
+		} catch (newerror) {
 			await interaction.editReply({
 				content: `There was an error while executing this command!\n\n${error}`,
 				ephemeral: true,

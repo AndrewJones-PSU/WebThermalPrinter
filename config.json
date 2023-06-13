@@ -13,7 +13,7 @@
 		"maxheight": 2000
 	},
 	"printer": {
-		"comport": "COM8",
+		"comport": "/dev/ttyUSB0",
 		"baudrate": 115200,
 		"cutNewlines": 3
 	}
