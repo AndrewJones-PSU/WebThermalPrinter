@@ -15,7 +15,9 @@ let page;
 // This is done outside textToImage so that the browser and page are only initialized once
 // initializing the browser and page can take a while (500+ ms in some cases), so this saves a lot of time
 async function puppeteerInit() {
-	browser = await puppeteer.launch();
+	browser = await puppeteer.launch({
+		args: ['--no-sandbox', '--disable-setuid-sandbox'],
+	});
 	page = await browser.newPage();
 	await page.setViewport({
 		width: config.img.width,
