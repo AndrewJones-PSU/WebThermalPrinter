@@ -16,7 +16,7 @@ let page;
 // initializing the browser and page can take a while (500+ ms in some cases), so this saves a lot of time
 async function puppeteerInit() {
 	browser = await puppeteer.launch({
-		args: ['--no-sandbox', '--disable-setuid-sandbox'],
+		executablePath: "/usr/bin/google-chrome",
 	});
 	page = await browser.newPage();
 	await page.setViewport({
