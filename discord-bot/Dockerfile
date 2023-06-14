@@ -11,4 +11,11 @@ RUN npm install --production
 
 COPY . .
 
+# add discord commands to the bot
+WORKDIR /app/commands
+ARG REGISTER_COMMANDS=false
+RUN if [ "$REGISTER_COMMANDS" = "true" ] ; then node register.js ; fi
+
+WORKDIR /app
+
 CMD ["node", "app-discordbot.js"]
