@@ -5,8 +5,8 @@ module.exports = {
 	async execute(interaction) {
 		await interaction.reply({
 			content:
-				"/help - Prints information about available commands\n" +
-				"/preview (NON FUNCTIONAL ATM) - Prints a preview of the message and/or files to the printer\n" +
+				"/help - Displays information about available commands\n" +
+				"/preview - Displays a preview of the message and/or files\n" +
 				"/print - Prints a message and/or files to the printer\n\n" +
 				"**Some formatting tips:**\n" +
 				"- Markdown is supported for the message and text file contents!\n" +
