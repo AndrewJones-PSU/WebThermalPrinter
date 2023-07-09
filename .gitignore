@@ -3,3 +3,5 @@ node_modules
 web-server/testfiles/output
 env.json
 /*/config.json
+rss-watch/printed
+rss-watch/feedslist.json

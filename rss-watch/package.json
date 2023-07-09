@@ -1,0 +1,22 @@
+{
+	"name": "webthermalprinter-rsswatch",
+	"version": "1.0.0",
+	"description": "A node.js app that sends RSS feeds to print to the web server API.",
+	"main": "app-rsswatch.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AndrewJones-PSU/WebThermalPrinter.git"
+	},
+	"author": "AndrewJones-PSU",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/AndrewJones-PSU/WebThermalPrinter/issues"
+	},
+	"homepage": "https://github.com/AndrewJones-PSU/WebThermalPrinter#readme",
+	"dependencies": {
+		"rss-parser": "^3.13.0"
+	}
+}
