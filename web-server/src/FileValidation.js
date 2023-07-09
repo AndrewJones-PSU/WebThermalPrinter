@@ -3,7 +3,7 @@
 // TODO: sanitize files in this function as well
 
 // Valid file mime types
-const validMimes = ["image/png", "image/jpeg", "image/jpg", "text/plain"];
+const validMimes = ["image/png", "image/jpeg", "image/jpg", "text/plain", "text/markdown"];
 // Valid file extensions for application/octet-stream files
 const validAosExtensions = [".md"];
 

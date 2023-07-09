@@ -49,10 +49,6 @@ async function sendRequestToWebServer(interaction, requestType) {
 			});
 			return;
 		}
-		// if the file is a markdown file, change the mimetype to text/plain (web server bugs out with text/markdown)
-		if (contentType === "text/markdown; charset=utf-8") {
-			contentType = "text/plain; charset=utf-8";
-		}
 		// download the file and append it to the form
 		let src = file.url;
 		// download the image
