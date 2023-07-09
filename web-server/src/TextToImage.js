@@ -8,38 +8,20 @@ const Jimp = require("jimp");
 const https = require("https");
 const ImageProcessing = require("./ImageProcessing.js");
 
-let browser;
-let page;
-
-// Initialize the browser and page
-// This is done outside textToImage so that the browser and page are only initialized once
-// initializing the browser and page can take a while (500+ ms in some cases), so this saves a lot of time
-async function puppeteerInit() {
+async function textToImage(textFile) {
+	// initialize browser and page
+	let browser;
+	let page;
 	browser = await puppeteer.launch({
 		executablePath: "/usr/bin/google-chrome",
+		headless: "new",
 	});
 	page = await browser.newPage();
 	await page.setViewport({
 		width: config.img.width,
 		height: 1,
 	});
-	console.log("Puppeteer Browser and Page initialized");
-}
 
-// deinit function to close the browser when we want to close the application
-function puppeteerClose() {
-	browser.close().then(() => {
-		browser = null;
-		page = null;
-		console.log("Puppeteer Browser and Page deinitialized");
-	});
-}
-
-async function textToImage(textFile) {
-	// check if the browser and page have been initialized, and if not, initialize them
-	if (!page) {
-		await puppeteerInit();
-	}
 	// Convert the text/md file to html
 	// remember that textFile is a buffer, so we convert it to a string here
 	let markedhtml = md.render(textFile.toString());
@@ -85,15 +67,23 @@ async function textToImage(textFile) {
 	await page.setContent(html);
 	// then take a screenshot, convert to jimp image, and return
 	return new Promise((resolve, reject) => {
-		screenshot = page
-			.screenshot({
-				width: config.img.width,
-				type: "png",
-				fullPage: true,
-				captureBeyondViewport: true,
-				encoding: "binary",
+		page.screenshot({
+			width: config.img.width,
+			type: "png",
+			fullPage: true,
+			captureBeyondViewport: true,
+			encoding: "binary",
+		})
+			.catch((err) => {
+				reject(err);
+				return;
 			})
 			.then((screenshot) => {
+				browser.close();
+				if (screenshot === undefined) {
+					reject("Error: Screenshot failed, invalid state!");
+					return;
+				}
 				resolve(Jimp.read(screenshot));
 			});
 	});
@@ -158,4 +148,4 @@ async function getImage(imgTag) {
 	});
 }
 
-module.exports = { textToImage, puppeteerInit, puppeteerClose };
+module.exports = { textToImage };

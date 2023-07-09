@@ -42,8 +42,14 @@ async function fileToJimp(file) {
 	// Call the corresponding function
 	if (type == "image/png" || type == "image/jpeg") {
 		return ImageProcessing.formatImage(file.buffer);
-	} else if (type == "text/plain" || (type == "application/octet-stream" && file.originalname.endsWith(".md"))) {
-		return textToImage.textToImage(file.buffer);
+	} else if (
+		type == "text/plain" ||
+		type == "text/markdown" ||
+		(type == "application/octet-stream" && file.originalname.endsWith(".md"))
+	) {
+		return textToImage.textToImage(file.buffer).catch((err) => {
+			return textToImage.textToImage(Buffer.from("" + err));
+		});
 	}
 }
 
