@@ -13,6 +13,8 @@ if (process.env.NODE_ENV !== "production") {
 const Parser = require("rss-parser");
 const parser = new Parser();
 const { NodeHtmlMarkdown } = require("node-html-markdown");
+const http = require("http");
+const formdata = require("form-data");
 const fs = require("fs");
 const env = require("./env.json");
 
@@ -86,6 +88,54 @@ async function getPrintedAndUpdate(file, feed) {
 	return newItems;
 }
 
+// send request to web server given an rss item, log any errors
+async function sendRequest(item) {
+	// create form data
+	let form = new formdata();
+	// create string for file to send
+	let data = "# " + item.title + "\n" + item.link + "\n\n" + nhm.translate(item.content);
+	// add data to form
+	form.append("allfiles", Buffer.from(data), {
+		filename: "rsswatch.txt",
+		contentType: "text/plain",
+	});
+	// create and send request
+	let request = http.request({
+		method: "POST",
+		host: env.webIP,
+		path: "/print",
+		port: env.webPort,
+		headers: form.getHeaders(),
+	});
+	form.pipe(request);
+	// check if request was successful, if not, log error to console + log file
+	request.on("error", (res) => {
+		console.error('Error sending request to web server for item "' + item.title + '": ' + res);
+		fs.appendFileSync(
+			"./error.log",
+			'Error sending request to web server for item "' + item.title + '": ' + res + "\n"
+		);
+	});
+	// log request to console + log file if web server returns error
+	request.on("response", (res) => {
+		if (res.statusCode !== 200) {
+			console.error(
+				'Error from web server for item "' + item.title + '": ' + res.statusCode + ", " + res.statusMessage
+			);
+			fs.appendFileSync(
+				"./error.log",
+				'Error from web server for item "' +
+					item.title +
+					'": ' +
+					res.statusCode +
+					", " +
+					res.statusMessage +
+					"\n"
+			);
+		}
+	});
+}
+
 // main loop
 async function main() {
 	// get list of feeds from file
@@ -98,7 +148,7 @@ async function main() {
 		let feedObj = await getFeed(feed.url);
 		let newItems = await getPrintedAndUpdate(`./printed/${feed.name}.json`, feedObj);
 		newItems.forEach((item) => {
-			console.log(item.title + ": " + item.link + "\n" + nhm.translate(item.content) + "\n");
+			sendRequest(item);
 		});
 	});
 	// rerun main loop every 5 minutes (300000ms)
