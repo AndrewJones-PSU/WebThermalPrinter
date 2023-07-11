@@ -42,6 +42,11 @@ async function getPrintedAndUpdate(file, feed) {
 	let printed;
 	let newItems = [];
 	let eonent = false;
+	// make sure the directory exists, if not, create it
+	if (!fs.existsSync("./printed")) {
+		fs.mkdirSync("./printed");
+	}
+	// try to read and parse file, if it doesn't exist, create it
 	try {
 		printed = JSON.parse(fs.readFileSync(file, "utf8"));
 	} catch (err) {
