@@ -11,7 +11,7 @@
 
 const fs = require("fs");
 
-const subdirs = ["web-server", "print-spooler", "discord-bot"];
+const subdirs = ["web-server", "print-spooler", "discord-bot", "rss-watch"];
 
 // copy the files into each subdirectory
 subdirs.forEach((subdir) => {
