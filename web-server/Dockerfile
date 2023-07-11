@@ -26,15 +26,15 @@ COPY package.json ./
 
 RUN npm install --production
 
-COPY . .
-
 # Add user so we don't need --no-sandbox in puppeteer
-RUN  groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
-    && mkdir -p /home/pptruser/Downloads \
-    && chown -R pptruser:pptruser /home/pptruser \
-    && chown -R pptruser:pptruser /app/node_modules \
-    && chown -R pptruser:pptruser /app/package.json \
-    && chown -R pptruser:pptruser /app/package-lock.json
+RUN  groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser
+RUN  mkdir -p /home/pptruser/Downloads
+RUN  chown -R pptruser:pptruser /home/pptruser
+RUN  chown -R pptruser:pptruser /app/node_modules
+RUN  chown -R pptruser:pptruser /app/package.json
+RUN  chown -R pptruser:pptruser /app/package-lock.json
+
+COPY . .
 
 # Run everything after as non-privileged user.
 USER pptruser
