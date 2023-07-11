@@ -12,10 +12,20 @@ async function textToImage(textFile) {
 	// initialize browser and page
 	let browser;
 	let page;
-	browser = await puppeteer.launch({
-		executablePath: "/usr/bin/google-chrome",
-		headless: "new",
-	});
+
+	// if not in production, use the default path to chrome when launching puppeteer
+	// otherwise, specify the path to chrome
+	if (process.env.NODE_ENV !== "production") {
+		browser = await puppeteer.launch({
+			headless: "new",
+		});
+	} else {
+		browser = await puppeteer.launch({
+			executablePath: "/usr/bin/google-chrome",
+			headless: "new",
+		});
+	}
+
 	page = await browser.newPage();
 	await page.setViewport({
 		width: config.img.width,
