@@ -5,3 +5,4 @@ env.json
 /*/config.json
 rss-watch/printed
 rss-watch/feedslist.json
+rss-watch/error.log

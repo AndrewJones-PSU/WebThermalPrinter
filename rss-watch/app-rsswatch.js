@@ -110,30 +110,48 @@ async function sendRequest(item) {
 	form.pipe(request);
 	// check if request was successful, if not, log error to console + log file
 	request.on("error", (res) => {
-		console.error('Error sending request to web server for item "' + item.title + '": ' + res);
-		fs.appendFileSync(
-			"./error.log",
-			'Error sending request to web server for item "' + item.title + '": ' + res + "\n"
-		);
+		logError(item.title, item.link, res, false);
 	});
 	// log request to console + log file if web server returns error
 	request.on("response", (res) => {
 		if (res.statusCode !== 200) {
-			console.error(
-				'Error from web server for item "' + item.title + '": ' + res.statusCode + ", " + res.statusMessage
-			);
-			fs.appendFileSync(
-				"./error.log",
-				'Error from web server for item "' +
-					item.title +
-					'": ' +
-					res.statusCode +
-					", " +
-					res.statusMessage +
-					"\n"
-			);
+			logError(item.title, item.link, res, true);
 		}
 	});
+}
+
+// log error to console + log file
+// fromServer is true if the error is from the web server, false if it's from the request
+function logError(itemName, url, err, fromServer) {
+	// make a date/time string in the local timezone
+	let dateStr = new Date().toLocaleString(Intl.DateTimeFormat().resolvedOptions().locale, {
+		timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+	});
+	// create error string based on type of error
+	let errorString;
+	if (fromServer) {
+		errorString =
+			dateStr +
+			' - Error from web server for item "' +
+			itemName +
+			'" from url "' +
+			url +
+			'": ' +
+			err.statusCode +
+			", " +
+			err.statusMessage;
+	} else {
+		errorString =
+			dateStr +
+			' - Error sending request to web server for item "' +
+			itemName +
+			'" from url "' +
+			url +
+			'": ' +
+			err;
+	}
+	console.error(errorString);
+	fs.appendFileSync("./error.log", errorString + "\n");
 }
 
 // main loop
