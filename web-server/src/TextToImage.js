@@ -43,6 +43,7 @@ async function textToImage(textFile) {
 			body {
 				margin: 0;
 				font-size: 2em;
+				overflow-wrap: break-word;
 			}
 			code {
 				white-space: pre-wrap;
