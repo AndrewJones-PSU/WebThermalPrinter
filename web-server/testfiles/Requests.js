@@ -1,13 +1,13 @@
 // This file tests whether requests to http://localhost:PORT/ are handled correctly.
 // Note: app.js must be running for this to work.
 const http = require("http");
-const env = require("../../env.json");
 const fs = require("fs");
 const formdata = require("form-data");
+require("dotenv").config();
 
 // PORT is the port that app.js is running on
 // HOST is the base URL of the server, change this if running app.js externally
-const PORT = env.webPort;
+const PORT = process.env.webPort;
 const HOST = `localhost`;
 
 // basic test to verify server is running

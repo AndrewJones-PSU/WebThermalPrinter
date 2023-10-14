@@ -2,9 +2,9 @@
 // This is run on docker build, and should only be run manually if you need to update accepted guilds.
 const fs = require("fs");
 const path = require("path");
+require("dotenv").config();
 const { Routes } = require("discord.js");
 const { REST } = require("@discordjs/rest");
-const env = require("./../env.json");
 
 const commands = [];
 const commandsPath = path.join(__dirname, "/");
@@ -18,10 +18,10 @@ for (const file of commandFiles) {
 
 console.log(commands);
 
-const rest = new REST({ version: "10" }).setToken(env.discordBotToken);
+const rest = new REST({ version: "10" }).setToken(process.env.discordBotToken);
 
 Routes.applicationCommands;
 
-rest.put(Routes.applicationCommands(env.discordBotID), { body: commands })
+rest.put(Routes.applicationCommands(process.env.discordBotID), { body: commands })
 	.then((data) => console.log(`Successfully registered ${data.length} application commands.`))
 	.catch(console.error);

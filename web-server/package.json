@@ -17,6 +17,7 @@
 	},
 	"homepage": "https://github.com/AndrewJones-PSU/WebThermalPrinter#readme",
 	"dependencies": {
+		"dotenv": "^16.3.1",
 		"express": "^4.18.2",
 		"form-data": "^4.0.0",
 		"jimp": "^0.22.7",

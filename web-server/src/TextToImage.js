@@ -2,6 +2,7 @@
 // the rendered text should appropriate interpret markdown, and should be formatted to fit on the page (config.img.width).
 
 const config = require("./../config.json");
+require("dotenv").config();
 const md = require("markdown-it")();
 const puppeteer = require("puppeteer");
 const Jimp = require("jimp");

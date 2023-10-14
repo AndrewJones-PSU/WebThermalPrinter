@@ -16,7 +16,7 @@ const subdirs = ["web-server", "print-spooler", "discord-bot", "rss-watch"];
 // copy the files into each subdirectory
 subdirs.forEach((subdir) => {
 	fs.copyFileSync("./config.json", `./${subdir}/config.json`);
-	fs.copyFileSync("./env.json", `./${subdir}/env.json`);
+	fs.copyFileSync("./.env", `./${subdir}/.env`);
 });
 
 console.log("Done");

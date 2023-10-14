@@ -5,16 +5,19 @@
 
 if (process.env.NODE_ENV !== "production") {
 	const fs = require("fs");
-	console.log("Dev environment detected, copying configs from parent directory");
+	console.warn("Dev environment detected, copying configs from parent directory.");
+	console.warn(
+		"Since environment variables are loaded before this script runs, you may need to restart this process for changes to take effect."
+	);
 	fs.copyFileSync("./../config.json", "./config.json");
-	fs.copyFileSync("./../env.json", "./env.json");
+	fs.copyFileSync("./../.env", "./.env");
 }
 
 // Define the rest of our imports
 const fs = require("fs");
 const path = require("path");
+require("dotenv").config();
 const { Client, GatewayIntentBits, Collection } = require("discord.js");
-const env = require("./env.json");
 
 // Create the client and import commands
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -68,4 +71,4 @@ client.on("error", (error) => {
 });
 
 // log the bot in
-client.login(env.discordBotToken);
+client.login(process.env.discordBotToken);

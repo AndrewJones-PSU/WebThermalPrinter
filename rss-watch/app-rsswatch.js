@@ -5,18 +5,21 @@
 
 if (process.env.NODE_ENV !== "production") {
 	const fs = require("fs");
-	console.log("Dev environment detected, copying configs from parent directory");
+	console.warn("Dev environment detected, copying configs from parent directory.");
+	console.warn(
+		"Since environment variables are loaded before this script runs, you may need to restart this process for changes to take effect."
+	);
 	fs.copyFileSync("./../config.json", "./config.json");
-	fs.copyFileSync("./../env.json", "./env.json");
+	fs.copyFileSync("./../.env", "./.env");
 }
 
+require("dotenv").config();
 const Parser = require("rss-parser");
 const parser = new Parser();
 const { NodeHtmlMarkdown } = require("node-html-markdown");
 const http = require("http");
 const formdata = require("form-data");
 const fs = require("fs");
-const env = require("./env.json");
 
 // initialize markdown converter with options
 const nhm = new NodeHtmlMarkdown({ keepDataImages: true, useLinkReferenceDefinitions: false, useInlineLinks: false });
@@ -107,9 +110,9 @@ async function sendRequest(item) {
 	// create and send request
 	let request = http.request({
 		method: "POST",
-		host: env.webIP,
+		host: process.env.webIP,
 		path: "/print",
-		port: env.webPort,
+		port: process.env.webPort,
 		headers: form.getHeaders(),
 	});
 	form.pipe(request);

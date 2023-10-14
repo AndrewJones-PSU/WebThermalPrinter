@@ -1,7 +1,7 @@
 .vscode
 node_modules
 web-server/testfiles/output
-env.json
+.env
 /*/config.json
 rss-watch/printed
 rss-watch/feedslist.json

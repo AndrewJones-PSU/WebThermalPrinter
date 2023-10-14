@@ -1,6 +1,6 @@
-const env = require("./../env.json");
 const http = require("http");
 const formdata = require("form-data");
+require("dotenv").config();
 
 function sendImagesToSpooler(images) {
 	return new Promise((resolve, reject) => {
@@ -32,9 +32,9 @@ function sendImagesToSpooler(images) {
 		// Send the form to the spooler
 		let request = http.request({
 			method: "POST",
-			host: env.spoolerIP,
+			host: process.env.spoolerIP,
 			path: "/print",
-			port: env.spoolerPort,
+			port: process.env.spoolerPort,
 			headers: form.getHeaders(),
 		});
 		form.pipe(request);
