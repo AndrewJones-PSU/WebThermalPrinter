@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: web-thermal-printer-deployment
+    namespace: default
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: web-thermal-printer-deployment
+    template:
+        metadata:
+            labels:
+                app: web-thermal-printer-deployment
+        spec:
+            containers:
+                - name: wtp-spooler
+                  image: wtp-spooler
+                - name: wtp-webserver
+                  image: wtp-webserver
+                - name: wtp-discordbot
+                  image: wtp-discordbot
+                - name: wtp-rsswatch
+                  image: wtp-rsswatch
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: web-thermal-printer-entrypoint
+    namespace: default
+spec:
+    selector:
+        app: web-thermal-printer-deployment
+    ports:
+        - port: 3000
+          targetPort: 3000
+        - port: 3001
+          targetPort: 3001
+    type: NodePort
