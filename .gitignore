@@ -6,3 +6,4 @@ web-server/testfiles/output
 rss-watch/printed
 rss-watch/feedslist.json
 rss-watch/error.log
+docker-compose.yaml

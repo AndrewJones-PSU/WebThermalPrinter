@@ -1,0 +1,31 @@
+version: "3"
+services:
+    wtp-web-server:
+        build: ./web-server
+        container_name: wtp-web-server
+        cap_add:
+            - SYS_ADMIN
+        ports:
+            - "3000:3000"
+        environment:
+            - spoolerIP=192.168.1.11
+            - spoolerPort=3001
+            - webIP=192.168.1.10
+            - webPort=3000
+
+    wtp-discord-bot:
+        build: ./discord-bot
+        container_name: wtp-discord-bot
+        environment:
+            - webIP=192.168.1.10
+            - webPort=3000
+            - discordBotToken=YourBotTokenHere
+            - discordBotID=YourBotIdHere
+            - discordDevGuildID=YourDevGuildHere
+
+    wtp-rss-watch:
+        build: ./rss-watch
+        container_name: wtp-rss-watch
+        environment:
+            - webIP=192.168.1.10
+            - webPort=3000
