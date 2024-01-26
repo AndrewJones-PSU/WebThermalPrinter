@@ -14,13 +14,13 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const express = require("express");
-const config = require("./config.json");
+// const config = require("./config.json");
 require("dotenv").config();
 const multer = require("multer");
 const storage = multer.memoryStorage();
 const multerUpload = multer({
 	storage: storage,
-	limits: { files: process.env.server.maxFileCount, fileSize: process.env.server.maxFileSize },
+	limits: { files: process.env.server_maxFileCount, fileSize: process.env.server_maxFileSize },
 });
 
 const app = express();

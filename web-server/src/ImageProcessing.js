@@ -3,18 +3,18 @@
 // formatImage(img)
 // Given an image file buffer, format it for printing
 // Formatting includes:
-// - resizing to process.env.img.width (default is 576 px wide)
-// - converting to black and white (NOT grayscale) using process.env.img.bwmethod (can be "none", "threshold", or "floyd-steinburg")
+// - resizing to process.env.img-width (default is 576 px wide)
+// - converting to black and white (NOT grayscale) using process.env.img-bwmethod (can be "none", "threshold", or "floyd-steinburg")
 // returned image is a jimp image, or string if there was an error
 
 // splitAndExport(img)
-// Given an image file buffer, split it into multiple images if it exceeds process.env.img.maxheight
+// Given an image file buffer, split it into multiple images if it exceeds process.env.img-maxHeight
 // after splitting, "export" the images out of jimp and into an array of PNG image buffers
 // returns an array of PNG image buffers
 // This function is used to split images that are too tall for the printer to handle + remove the jimp dependency
 
 // Import modules
-const config = require("./../config.json");
+// const config = require("./../config.json");
 const Jimp = require("jimp");
 
 async function formatImage(img) {
@@ -29,9 +29,9 @@ async function formatImage(img) {
 	// Create a Jimp image from the buffer
 	let image = await Jimp.read(img);
 	// Resize the image
-	image.resize(process.env.img.width, Jimp.AUTO);
+	image.resize(global.parseInt(process.env.img_width), Jimp.AUTO);
 	// Convert the image to black and white
-	switch (process.env.img.bwmethod) {
+	switch (process.env.img_bwmethod) {
 		default: // if invalid, default to grayscale
 			image = image.grayscale();
 			break;
@@ -39,7 +39,7 @@ async function formatImage(img) {
 			image = image.grayscale();
 			break;
 		case "threshold":
-			image = image.threshold(process.env.img.threshold);
+			image = image.threshold(global.parseInt(process.env.img_threshold));
 			break;
 		case "floyd-steinberg":
 			image = floydSteinberg(image);
@@ -51,17 +51,17 @@ async function formatImage(img) {
 
 async function splitAndExport(img) {
 	let images = [];
-	// split the image into multiple images if it exceeds process.env.img.maxheight
-	if (img.bitmap.height > process.env.img.maxheight) {
+	// split the image into multiple images if it exceeds process.env.img-maxHeight
+	if (img.bitmap.height > process.env.img_maxHeight) {
 		// calculate the number of images needed
-		let numImages = Math.ceil(img.bitmap.height / process.env.img.maxheight);
+		let numImages = Math.ceil(img.bitmap.height / process.env.img_maxHeight);
 		// split the image into multiple images
 		for (let i = 0; i < numImages; i++) {
 			// calculate the height of the image
-			// This will either be process.env.img.maxheight or the remaining height of the image
-			let height = Math.min(process.env.img.maxheight, img.bitmap.height - i * process.env.img.maxheight);
+			// This will either be process.env.img-maxHeight or the remaining height of the image
+			let height = Math.min(process.env.img_maxHeight, img.bitmap.height - i * process.env.img_maxHeight);
 			// crop the image
-			let image = await img.clone().crop(0, i * process.env.img.maxheight, img.bitmap.width, height);
+			let image = await img.clone().crop(0, i * process.env.img_maxHeight, img.bitmap.width, height);
 			// add the image to the array, exporting it out of jimp
 			images.push(await image.getBufferAsync(Jimp.MIME_PNG));
 		}

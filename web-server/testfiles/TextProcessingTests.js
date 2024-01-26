@@ -1,7 +1,7 @@
 // This file validates the operation of the function "textToImage(textFile)" within src/TextToImage.js
 
 // Import modules
-const config = require("../../config.json");
+// const config = require("../../config.json");
 const fs = require("fs");
 const TextToImage = require("../src/TextToImage.js");
 const ImageProcessing = require("../src/ImageProcessing.js");
