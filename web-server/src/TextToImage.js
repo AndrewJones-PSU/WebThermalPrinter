@@ -1,5 +1,5 @@
 // Given a text or markdown file buffer, format it for printing, render it to a png, and return a jimp image of the png.
-// the rendered text should appropriate interpret markdown, and should be formatted to fit on the page (config.img.width).
+// the rendered text should appropriate interpret markdown, and should be formatted to fit on the page (process.env.img.width).
 
 const config = require("./../config.json");
 require("dotenv").config();
@@ -29,7 +29,7 @@ async function textToImage(textFile) {
 
 	page = await browser.newPage();
 	await page.setViewport({
-		width: config.img.width,
+		width: process.env.img.width,
 		height: 1,
 	});
 
@@ -70,7 +70,7 @@ async function textToImage(textFile) {
 		}
 		// replace the src with a data URI
 		newImages[0][i].getBase64(Jimp.MIME_PNG, (err, src) => {
-			html = html.replace(newImages[1][i], `<img src="${src}" width=${config.img.width}/>`);
+			html = html.replace(newImages[1][i], `<img src="${src}" width=${process.env.img.width}/>`);
 		});
 	}
 
@@ -80,7 +80,7 @@ async function textToImage(textFile) {
 	// then take a screenshot, convert to jimp image, and return
 	return new Promise((resolve, reject) => {
 		page.screenshot({
-			width: config.img.width,
+			width: process.env.img.width,
 			type: "png",
 			fullPage: true,
 			captureBeyondViewport: true,

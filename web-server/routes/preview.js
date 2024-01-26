@@ -1,5 +1,3 @@
-const config = require("./../config.json");
-
 const GetPrintableImages = require("../src/GetPrintableImages.js");
 
 function preview(app, multerUpload) {

@@ -20,7 +20,7 @@ const multer = require("multer");
 const storage = multer.memoryStorage();
 const multerUpload = multer({
 	storage: storage,
-	limits: { files: config.server.maxFileCount, fileSize: config.server.maxFileSize },
+	limits: { files: process.env.server.maxFileCount, fileSize: process.env.server.maxFileSize },
 });
 
 const app = express();
@@ -31,7 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 require("./routes/routeloader")(app, multerUpload);
 
 const PORT = process.env.webPort;
-if (!PORT) throw new Error("PORT is not defined in config.json");
+if (!PORT) throw new Error("PORT is not defined in environment variables!");
 app.listen(PORT, () => {
 	console.log(`Server is running on port ${PORT}`);
 });
