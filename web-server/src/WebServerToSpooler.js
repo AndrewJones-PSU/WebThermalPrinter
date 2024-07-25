@@ -1,6 +1,5 @@
 const http = require("http");
 const formdata = require("form-data");
-require("dotenv").config();
 
 function sendImagesToSpooler(images) {
 	return new Promise((resolve, reject) => {

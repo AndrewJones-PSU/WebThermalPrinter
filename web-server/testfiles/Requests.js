@@ -3,7 +3,6 @@
 const http = require("http");
 const fs = require("fs");
 const formdata = require("form-data");
-require("dotenv").config();
 
 // PORT is the port that app.js is running on
 // HOST is the base URL of the server, change this if running app.js externally
