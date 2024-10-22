@@ -21,7 +21,6 @@ const storage = multer.memoryStorage();
 const multerUpload = multer({
 	storage: storage,
 });
-require("dotenv").config();
 const Spooler = require("./src/Spooler.js");
 
 const app = express();
@@ -30,7 +29,7 @@ app.use(express.json());
 // Dynamically import routes
 require("./routes/routeloader")(app, multerUpload);
 
-const PORT = process.env.spoolerPort;
+const PORT = global.parseInt(process.env.spoolerPort);
 if (!PORT) throw new Error("PORT is not defined in env.json");
 app.listen(PORT, () => {
 	console.log(`Spooler is running on port ${PORT}`);

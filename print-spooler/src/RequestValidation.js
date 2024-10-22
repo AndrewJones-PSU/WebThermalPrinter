@@ -4,12 +4,11 @@
 //
 // B: take in a file and validate they satisfy the following criteria:
 // 1. It is a PNG image
-// 2. The image is at most config.img.width x config.img.maxheight in size
+// 2. The image is at most process.env.img.width x process.env.img.maxheight in size
 // The function returns an array with two elements, the first being a boolean indicating whether the image is valid,
 // and the second being a string containing an error message if the image is invalid.
 // This function also returns true for txt files, which are interpreted as a command (for example, "cut")
 
-const config = require("./../config.json");
 const sizeOf = require("image-size");
 
 function bufferToBase64(buffer) {
@@ -33,11 +32,21 @@ function validateImage(image) {
 	let imageDims = sizeOf(imageBuffer);
 
 	// Check that the image is the proper width and is not too tall
-	if (imageDims.width != config.img.width) {
-		return [false, "Image width is not " + config.img.width + "(given " + imageDims.width + ")"];
+	if (imageDims.width != global.parseInt(process.env.img_width)) {
+		return [
+			false,
+			"Image width is not " + global.parseInt(process.env.img_width) + "(given " + imageDims.width + ")",
+		];
 	}
-	if (imageDims.height > config.img.maxheight) {
-		return [false, "Image height is greater than " + config.img.maxheight + "(given " + imageDims.height + ")"];
+	if (imageDims.height > global.parseInt(process.env.img_maxheight)) {
+		return [
+			false,
+			"Image height is greater than " +
+				global.parseInt(process.env.img_maxheight) +
+				"(given " +
+				imageDims.height +
+				")",
+		];
 	}
 	return [true, "OK"];
 }

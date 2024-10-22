@@ -3,7 +3,6 @@
 // 2. Sending files from the queue to the printer
 // 3. Dealing with the nonsense that is the ESCPOS library
 
-const config = require("./../config.json");
 const rwlock = require("rwlock");
 const Queue = require("./Queue.js");
 const sizeOf = require("image-size");
@@ -21,8 +20,8 @@ const encoder = new ThermalPrinterEncoder({
 });
 
 const port = new SerialPort({
-	path: config.printer.comport,
-	baudRate: config.printer.baudrate,
+	path: global.parseInt(process.env.printer_comport),
+	baudRate: global.parseInt(process.env.printer_baudrate),
 });
 
 // addImagesToQueue takes in an array of images and adds them to the spooler queue. Returns true on completion.
@@ -78,7 +77,7 @@ function queueLoop() {
 		// Print the queue (this function doesn't do anything if the queue is empty)
 		printQueue();
 		// Call this function again in config.spooler.queueLoopInterval milliseconds
-		setTimeout(queueLoop, config.spooler.queueLoopInterval);
+		setTimeout(queueLoop, global.parseInt(process.env.spooler_queueLoopInterval));
 		release();
 	});
 }
@@ -110,7 +109,7 @@ function printCMD(text) {
 		// note that prior to a cut, we need to add a few newlines
 		// the exact number of newlines is defined in config.printer.cutNewlines
 		let result = encoder;
-		for (let i = 0; i < config.printer.cutNewlines; i++) result = result.newline();
+		for (let i = 0; i < global.parseInt(process.env.printer_cutNewlines); i++) result = result.newline();
 		result = result.cut().encode();
 		port.write(result);
 		return true;

@@ -1,0 +1,24 @@
+version: "3"
+services:
+    wtp-print-spooler:
+        build: .
+        container_name: wtp-print-spooler
+        cap_add:
+            - SYS_ADMIN
+        ports:
+            - "3001:3001"
+        environment:
+            - spoolerIP=192.168.1.11
+            - spoolerPort=3001
+            - webIP=192.168.1.10
+            - webPort=3000
+            - server_maxFileCount=10
+            - server_maxFileSize=100000000
+            - img_width=576
+            - img_bwmethod=floyd-steinberg
+            - img_threshold=128
+            - img_maxHeight=2000
+            - spooler_queueLoopInterval=1000
+            - printer_comport=/dev/usb/lp0
+            - printer_baudrate=115200
+            - printer_cutNewLines=3
