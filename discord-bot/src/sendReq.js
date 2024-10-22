@@ -2,7 +2,6 @@ const http = require("http");
 const https = require("https");
 const formdata = require("form-data");
 const discord = require("discord.js");
-require("dotenv").config();
 
 async function sendRequestToWebServer(interaction, requestType) {
 	// sanity check that the request type is valid
@@ -87,7 +86,7 @@ function sendToWebServer(form, interaction, file, message, contentType, requestT
 		method: "POST",
 		host: process.env.webIP,
 		path: "/" + requestType,
-		port: process.env.webPort,
+		port: global.parseInt(process.env.webPort),
 		headers: form.getHeaders(),
 	});
 	form.pipe(request);

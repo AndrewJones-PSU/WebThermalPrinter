@@ -2,7 +2,6 @@
 // This is run on docker build, and should only be run manually if you need to update accepted guilds.
 const fs = require("fs");
 const path = require("path");
-require("dotenv").config();
 const { Routes } = require("discord.js");
 const { REST } = require("@discordjs/rest");
 
