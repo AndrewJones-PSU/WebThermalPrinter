@@ -24,7 +24,7 @@ const encoder = new ThermalPrinterEncoder({
 let port;
 if (process.env.printer_baudrate) {
 	port = new SerialPort({
-		path: global.parseInt(process.env.printer_comport),
+		path: process.env.printer_comport,
 		baudRate: global.parseInt(process.env.printer_baudrate),
 	});
 }
@@ -128,7 +128,7 @@ function sendToPrinter(data) {
 	if (process.env.baudRate) {
 		port.write(data);
 	} else {
-		fs.open(path, "w", (err, fd) => {
+		fs.open(process.env.printer_comport, "w", (err, fd) => {
 			if (err) {
 				console.error("Error opening the printer: ", err);
 				return;
