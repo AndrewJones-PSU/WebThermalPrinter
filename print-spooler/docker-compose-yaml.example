@@ -7,6 +7,8 @@ services:
             - SYS_ADMIN
         ports:
             - "3001:3001"
+        devices:
+            - /dev/usb/lp0:/dev/usb/lp0
         environment:
             - spoolerIP=192.168.1.11
             - spoolerPort=3001
@@ -20,5 +22,5 @@ services:
             - img_maxHeight=2000
             - spooler_queueLoopInterval=1000
             - printer_comport=/dev/usb/lp0
-            - printer_baudrate=115200
+            - printer_baudrate=115200 (don't define this if writing to file (like /dev/usb/lp0) for printing!)
             - printer_cutNewLines=3

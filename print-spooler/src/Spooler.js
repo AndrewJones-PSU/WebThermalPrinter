@@ -3,6 +3,7 @@
 // 2. Sending files from the queue to the printer
 // 3. Dealing with the nonsense that is the ESCPOS library
 
+const fs = require("fs");
 const rwlock = require("rwlock");
 const Queue = require("./Queue.js");
 const sizeOf = require("image-size");
@@ -19,10 +20,14 @@ const encoder = new ThermalPrinterEncoder({
 	language: "esc-pos",
 });
 
-const port = new SerialPort({
-	path: global.parseInt(process.env.printer_comport),
-	baudRate: global.parseInt(process.env.printer_baudrate),
-});
+// define serial port if the printer is through serial and not a file
+let port;
+if (process.env.printer_baudrate) {
+	port = new SerialPort({
+		path: global.parseInt(process.env.printer_comport),
+		baudRate: global.parseInt(process.env.printer_baudrate),
+	});
+}
 
 // addImagesToQueue takes in an array of images and adds them to the spooler queue. Returns true on completion.
 // WARNING: This function assumes that the images have already been validated!
@@ -64,7 +69,8 @@ function startQueueLoop() {
 	});
 	// Initialize the printer
 	let result = encoder.initialize().encode();
-	port.write(result);
+	// Write result
+	sendToPrinter(result);
 	// start the queue loop
 	queueLoop();
 }
@@ -98,7 +104,7 @@ function printQueue() {
 // printImage prints an image to the printer.
 function printImage(image, dimensions) {
 	let result = encoder.image(image, dimensions.width, dimensions.height).encode();
-	port.write(result);
+	sendToPrinter(result);
 }
 
 // printCMD sends a command to the printer. Returns true on completion,
@@ -111,11 +117,30 @@ function printCMD(text) {
 		let result = encoder;
 		for (let i = 0; i < global.parseInt(process.env.printer_cutNewlines); i++) result = result.newline();
 		result = result.cut().encode();
-		port.write(result);
+		sendToPrinter(result);
 		return true;
 	}
 	// TODO: Add more commands as needed
 	else return false;
+}
+
+function sendToPrinter(data) {
+	if (process.env.baudRate) {
+		port.write(data);
+	} else {
+		fs.open(path, "w", (err, fd) => {
+			if (err) {
+				console.error("Error opening the printer: ", err);
+				return;
+			}
+			fs.write(fd, data, (err, written, buffer) => {
+				if (err) console.error("Error writing to the printer: ", err);
+				fs.close(fd, (err) => {
+					if (err) console.error("Error closing the printer! ", err);
+				});
+			});
+		});
+	}
 }
 
 module.exports = { addImagesToQueue, startQueueLoop };
