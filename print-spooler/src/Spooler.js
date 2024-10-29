@@ -128,18 +128,7 @@ function sendToPrinter(data) {
 	if (process.env.baudRate) {
 		port.write(data);
 	} else {
-		fs.open(process.env.printer_comport, "w", (err, fd) => {
-			if (err) {
-				console.error("Error opening the printer: ", err);
-				return;
-			}
-			fs.write(fd, data, (err, written, buffer) => {
-				if (err) console.error("Error writing to the printer: ", err);
-				fs.close(fd, (err) => {
-					if (err) console.error("Error closing the printer! ", err);
-				});
-			});
-		});
+		fs.writeFileSync(process.env.printer_comport, data);
 	}
 }
 
