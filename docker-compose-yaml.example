@@ -12,6 +12,12 @@ services:
             - spoolerPort=3001
             - webIP=192.168.1.10
             - webPort=3000
+            - server_maxFileCount=10
+            - server_maxFileSize=100000000
+            - img_width=576
+            - img_bwmethod=floyd-steinberg
+            - img_threshold=128
+            - img_maxHeight=2000
 
     wtp-discord-bot:
         build: ./discord-bot
