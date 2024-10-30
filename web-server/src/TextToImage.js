@@ -8,30 +8,49 @@ const Jimp = require("jimp");
 const https = require("https");
 const ImageProcessing = require("./ImageProcessing.js");
 
+let browser;
+
+async function initBrowser() {
+	if (process.env.NODE_ENV !== "production") {
+		browser = await puppeteer.launch({
+			headless: "true",
+		});
+	} else {
+		browser = await puppeteer.launch({
+			args: ["--no-sandbox", "--disable-setuid-sandbox"],
+			executablePath: "/usr/bin/google-chrome",
+			headless: "true",
+		});
+	}
+}
+
+initBrowser();
+
+// Handle shutdown signals
+process.on("SIGINT", async () => {
+	console.log("Received SIGINT. Closing browser...");
+	if (browser) browser.close();
+	process.exit(0);
+});
+
+process.on("SIGTERM", async () => {
+	console.log("Received SIGTERM. Closing browser...");
+	if (browser) browser.close();
+	process.exit(0);
+});
+
 async function textToImage(textFile) {
 	// initialize browser and page
-	let browser;
+	if (!browser) await initBrowser();
 	let page;
 
 	// if not in production, use the default path to chrome when launching puppeteer
 	// otherwise, specify the path to chrome
-	if (process.env.NODE_ENV !== "production") {
-		browser = await puppeteer.launch({
-			headless: "new",
-		});
-	} else {
-		browser = await puppeteer.launch({
-			executablePath: "/usr/bin/chromium-browser",
-			headless: "new",
-		});
-	}
-
 	page = await browser.newPage();
 	await page.setViewport({
 		width: global.parseInt(process.env.img_width),
 		height: 1,
 	});
-
 	// Convert the text/md file to html
 	// remember that textFile is a buffer, so we convert it to a string here
 	let markedhtml = md.render(textFile.toString());
@@ -90,12 +109,13 @@ async function textToImage(textFile) {
 				return;
 			})
 			.then((screenshot) => {
-				browser.close();
+				page.close();
 				if (screenshot === undefined) {
 					reject("Error: Screenshot failed, invalid state!");
 					return;
 				}
-				resolve(Jimp.read(screenshot));
+				const buffer = Buffer.from(screenshot, "binary");
+				resolve(Jimp.read(buffer));
 			});
 	});
 }
