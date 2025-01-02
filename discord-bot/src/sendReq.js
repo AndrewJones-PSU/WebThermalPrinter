@@ -1,6 +1,7 @@
 const http = require("http");
 const https = require("https");
 const formdata = require("form-data");
+const { PermissionsBitField } = require("discord.js");
 const discord = require("discord.js");
 
 async function sendRequestToWebServer(interaction, requestType) {
@@ -99,7 +100,6 @@ function sendToWebServer(form, interaction, file, message, contentType, requestT
 	});
 	request.on("response", (res) => {
 		if (res.statusCode === 200) {
-			interaction.deleteReply();
 			if (requestType === "print") {
 				let interactionmessage;
 				if (file && message) {
@@ -109,10 +109,24 @@ function sendToWebServer(form, interaction, file, message, contentType, requestT
 				} else {
 					interactionmessage = `${interaction.user} Successfully printed a message!`;
 				}
-				interaction.followUp({
-					content: interactionmessage,
-					ephemeral: false,
-				});
+				// check if we have access to the channel
+				if (
+					interaction.guildId &&
+					interaction.channel
+						.permissionsFor(interaction.guild.members.me)
+						.has(PermissionsBitField.Flags.ViewChannel) &&
+					interaction.channel
+						.permissionsFor(interaction.guild.members.me)
+						.has(PermissionsBitField.Flags.SendMessages)
+				) {
+					interaction.deleteReply();
+					interaction.channel.send(interactionmessage);
+				} else {
+					interaction.editReply({
+						content: interactionmessage,
+						ephemeral: true,
+					});
+				}
 			} else if (requestType === "preview") {
 				// previews come back as base64 encoded images, each image seperated by a newline. Split the response by newline, then decode each image and send it to the user
 				// get text
@@ -131,7 +145,7 @@ function sendToWebServer(form, interaction, file, message, contentType, requestT
 							ephemeral: true,
 						});
 					}
-					interaction.followUp({
+					interaction.editReply({
 						content:
 							"Here is your preview! If you are happy with it, you can print it by running `/print` with the same input files.",
 						ephemeral: true,
