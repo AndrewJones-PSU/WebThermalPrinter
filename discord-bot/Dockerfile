@@ -15,6 +15,8 @@ COPY . .
 WORKDIR /app/commands
 ARG REGISTER_COMMANDS=false
 RUN if [ "$REGISTER_COMMANDS" = "true" ] ; then node register.js ; fi
+ARG REGISTER_COMMANDS_DEV=false
+RUN if [ "$REGISTER_COMMANDS_DEV" = "true" ] ; then node registerdev.js ; fi
 
 WORKDIR /app
 
