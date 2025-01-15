@@ -31,7 +31,7 @@ if (process.env.printer_baudrate) {
 
 // addImagesToQueue takes in an array of images and adds them to the spooler queue. Returns true on completion.
 // WARNING: This function assumes that the images have already been validated!
-function addImagesToQueue(images) {
+async function addImagesToQueue(images) {
 	queueLock.writeLock((release) => {
 		for (let i = 0; i < images.length; i++) {
 			// first, check if we're adding an image or a text file
@@ -78,7 +78,7 @@ function startQueueLoop() {
 // queueLoop is the main loop of the spooler. It automatically checks if the queue is empty every
 // config.spooler.queueLoopInterval milliseconds and, if not empty, prints the entire queue.
 // This function should never be called directly, use startQueueLoop instead.
-function queueLoop() {
+async function queueLoop() {
 	queueLock.readLock((release) => {
 		// Print the queue (this function doesn't do anything if the queue is empty)
 		printQueue();

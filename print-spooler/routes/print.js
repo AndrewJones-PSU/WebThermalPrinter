@@ -26,14 +26,9 @@ function print(app, multerUpload) {
 		}
 
 		// If all files are valid, add them to the spooler queue
-		returnVal = Spooler.addImagesToQueue(files);
-		if (returnVal) {
-			res.status(200);
-			res.send("Added " + files.length + " files to the spooler queue");
-		} else {
-			res.status(500);
-			res.send("Failed to add files to spooler queue");
-		}
+		Spooler.addImagesToQueue(files);
+		res.status(200);
+		res.send("Added " + files.length + " files to the spooler queue");
 	});
 }
 
