@@ -1,133 +1,141 @@
 const http = require("http");
 const https = require("https");
 const formdata = require("form-data");
-const { PermissionsBitField } = require("discord.js");
-const discord = require("discord.js");
+const { PermissionsBitField, AttachmentBuilder, MessageFlags } = require("discord.js");
 
-async function sendRequestToWebServer(interaction, requestType) {
-	// sanity check that the request type is valid
-	if (requestType !== "preview" && requestType !== "print")
-		throw new Error("Invalid request type, must be preview or print, got " + requestType);
 
-	await interaction.deferReply({ ephemeral: true });
-	const message = interaction.options.getString("message");
-	const file = interaction.options.getAttachment("file");
-	// sanity check that the user didn't send either option
-	if (!message && !file) {
-		await interaction.editReply({
-			content: "No content provided, you must provide a message and/or file to " + requestType,
-			ephemeral: true,
-		});
+async function handleWebServerInteraction(interaction, print = true) {
+	await interaction.reply({
+		flags: MessageFlags.Ephemeral,
+		content: "Processing Request...",
+	});
+
+	// OK here's what we have to do
+	// First, check which kind of interaction we're dealing with
+	//	there's three options for this rn, which are:
+	//	- print /command
+	//	- preview /command
+	//	- message reply
+	let message, attachments;
+	let missingAttachments = false;
+	const isContextMenu = interaction.isMessageContextMenuCommand();
+	// if interaction is reply to a message...
+	if (isContextMenu) {
+		message = interaction.targetMessage.content;
+		attachments = interaction.targetMessage.attachments.toJSON();
+	} else {
+		message = interaction.options.getString("message");
+		attachments = [interaction.options.getAttachment("file")];
+		// sanity check that the user didn't send either option
+		if (!message && !attachments) {
+			interaction.editReply("Error: No content provided, you must provide a message and/or file.");
+			return;
+		}
+	}
+	// Then, we get all the data/attachments for these
+	//	remember that attachments have to be downloaded!
+	let filenames = [];
+	let filetypes = [];
+	let urls = [];
+	// Check that we can download all the attachments
+	for (const attachment of attachments) {
+		if (attachment === null) {
+			// pass if no attachment
+		}
+		// if the file is not a png, jpeg, txt, or md file, throw an error
+		else if (
+			!["image/png", "image/jpeg", "text/plain; charset=utf-8", "text/markdown; charset=utf-8"].includes(
+				attachment.contentType
+			)
+		) {
+			if (isContextMenu) {
+				// if from a context menu, don't stop the request but make a note of it
+				missingAttachments = true;
+			} else {
+				// otherwise, yell at the user
+				interaction.editReply(
+					`Invalid file type, only .png .jpeg .txt and .md files are supported. Type sent: ${attachment.contentType}`
+				);
+				return;
+			}
+		} else {
+			urls.push(attachment.url);
+			filenames.push(attachment.name);
+			filetypes.push(attachment.contentType);
+		}
+	}
+	// Now download all attachments
+	let files;
+	try {
+		files = await Promise.all(urls.map(getAttachment));
+	} catch (error) {
+		interaction.editReply(`Error: An attachment download failed, please try again.`);
 		return;
 	}
-
-	// take the message and/or file, and send it to the web server
-	let form = new formdata();
-
-	// append username, then go through and replace all instances of \n with a newline character
-	let sendmessage = `${getTimeFromStamp(interaction.createdTimestamp)} - ${interaction.user.tag}:\n\n`;
+	// Create text portion, append timestamp and user(s) to top
+	let sendmessage = `${getTimeFromStamp(interaction.createdTimestamp)} - ${interaction.user.tag}`;
+	if (isContextMenu) sendmessage += `\\\noriginal message from ${interaction.targetMessage.author.tag}:\n\n`;
+	else sendmessage += `:\n\n`;
+	// append OG message, add an extra newlines to all newlines for markdown
 	if (message) sendmessage += message.replace(/\\n/g, "\n\n");
+
+	// Now we take our data and put it into a formdata
+	let form = new formdata();
 	form.append("allfiles", Buffer.from(sendmessage), {
 		filename: "message.txt",
 		contentType: "text/plain",
 	});
-	// if file, append it to the form
-
-	if (file) {
-		// get the file mimetype
-		let contentType = file.contentType;
-		// if the file is not a png, jpeg, txt, or md file, throw an error
-		if (
-			!["image/png", "image/jpeg", "text/plain; charset=utf-8", "text/markdown; charset=utf-8"].includes(
-				contentType
-			)
-		) {
-			await interaction.editReply({
-				content: `Invalid file type, only .png .jpeg .txt and .md files are supported. Type sent: ${contentType}`,
-				ephemeral: true,
-			});
-			return;
-		}
-		// download the file and append it to the form
-		let src = file.url;
-		// download the image
-		https.get(src, (response) => {
-			// check that we actually got a successful response
-			if (response.statusCode < 200 || response.statusCode > 299) {
-				response.resume();
-				interaction.editReply({
-					content: `Error: Image Download failed, status code: ${response.statusCode}`,
-					ephemeral: true,
-				});
-				return;
-			}
-			// now that we know we got a successful response, download the file
-			let chunks = [];
-			response.on("data", (chunk) => {
-				chunks.push(chunk);
-			});
-			response.on("end", () => {
-				form.append("allfiles", Buffer.concat(chunks), {
-					filename: file.name,
-					contentType: contentType,
-				});
-				sendToWebServer(form, interaction, file, message, contentType, requestType);
-			});
+	for (let i = 0; i < files.length; i++) {
+		form.append("allfiles", files[i], {
+			filename: filenames[i],
+			contentType: filetypes[i],
 		});
 	}
-	// if we didn't download a file, send the form to the web server
-	else {
-		sendToWebServer(form, interaction, file, message, null, requestType);
-		return;
-	}
-}
-
-function sendToWebServer(form, interaction, file, message, contentType, requestType) {
+	// Once we have our formdata, we send our request to the WTP web server
+	interaction.editReply("Sending to printer...");
 	let request = http.request({
 		method: "POST",
 		host: process.env.webIP,
-		path: "/" + requestType,
+		path: "/" + (print ? "print" : "preview"),
 		port: global.parseInt(process.env.webPort),
 		headers: form.getHeaders(),
 	});
+
 	form.pipe(request);
 	request.on("error", (res) => {
 		interaction.editReply({
-			content: `Error sending file to web server\n\n${res}`,
+			content: `Error: An error occured while communicating with the printer server.`,
 			ephemeral: true,
 		});
 		console.error(res);
 	});
 	request.on("response", (res) => {
 		if (res.statusCode === 200) {
-			if (requestType === "print") {
+			if (print) {
+				// set response message appropriately
 				let interactionmessage;
-				if (file && message) {
-					interactionmessage = `${interaction.user} Successfully printed a message and a ${contentType} file!`;
-				} else if (file) {
-					interactionmessage = `${interaction.user} Successfully printed a ${contentType} file!`;
+				if (isContextMenu) {
+					interactionmessage = `${interaction.user} printed this message!`;
+					if (missingAttachments)
+						interactionmessage +=
+							"\n-# note: some attachments were not accepted filetypes and were not printed.";
+				} else if (files.length > 0 && message) {
+					interactionmessage = `${interaction.user} Successfully printed a message and a ${filetypes[0]} file!`;
+				} else if (files.length > 0) {
+					interactionmessage = `${interaction.user} Successfully printed a ${filetypes[0]} file!`;
 				} else {
 					interactionmessage = `${interaction.user} Successfully printed a message!`;
 				}
-				// check if we have access to the channel
-				if (
-					interaction.guildId &&
-					interaction.channel
-						.permissionsFor(interaction.guild.members.me)
-						.has(PermissionsBitField.Flags.ViewChannel) &&
-					interaction.channel
-						.permissionsFor(interaction.guild.members.me)
-						.has(PermissionsBitField.Flags.SendMessages)
-				) {
+
+				// check that we can access the channel
+				if (canAccessChannel(interaction)) {
 					interaction.deleteReply();
-					interaction.channel.send(interactionmessage);
+					if (isContextMenu) interaction.targetMessage.reply(interactionmessage);
+					else interaction.channel.send(interactionmessage);
 				} else {
-					interaction.editReply({
-						content: interactionmessage,
-						ephemeral: true,
-					});
+					interaction.editReply(interactionmessage);
 				}
-			} else if (requestType === "preview") {
+			} else {
 				// previews come back as base64 encoded images, each image seperated by a newline. Split the response by newline, then decode each image and send it to the user
 				// get text
 				let data = "";
@@ -141,7 +149,7 @@ function sendToWebServer(form, interaction, file, message, contentType, requestT
 					for (let i = 0; i < images.length; i++) {
 						let buffer = Buffer.from(images[i].slice(22), "base64");
 						interaction.followUp({
-							files: [new discord.AttachmentBuilder(buffer, `preview${i}.png`)],
+							files: [new AttachmentBuilder(buffer, `preview${i}.png`)],
 							ephemeral: true,
 						});
 					}
@@ -153,20 +161,58 @@ function sendToWebServer(form, interaction, file, message, contentType, requestT
 				});
 			}
 		} else {
+			// handle non-200 status requests
 			res.on("data", (data) => {
-				if (requestType === "preview")
+				if (res.statusCode >= 500) {
 					interaction.editReply({
-						content: `Error previewing file\n\n${data}`,
+						content: `Error: An interal error occured in the print server.`,
 						ephemeral: true,
 					});
-				else if (requestType === "print")
+					console.error(res);
+				} else {
 					interaction.editReply({
-						content: `Error printing file\n\n${data}`,
+						content: `Error: ${res.statusCode} response from print server:\n\n${data}`,
 						ephemeral: true,
 					});
+				}
 			});
 		}
 	});
+
+	// Check the response, respond to the user's OG message in kind
+}
+
+function getAttachment(url) {
+	return new Promise((resolve, reject) => {
+		https.get(url, (response) => {
+			// check that we actually got a successful response
+			if (response.statusCode < 200 || response.statusCode > 299) {
+				console.warn(`Attachment download failed:\n${response}`);
+				reject({
+					content: `Error: Attachment download failed, status code: ${response.statusCode}`,
+					response: response,
+					statusCode: response.statusCode,
+				});
+				return;
+			}
+			// now that we know we got a successful response, download the file
+			let chunks = [];
+			response.on("data", (chunk) => {
+				chunks.push(chunk);
+			});
+			response.on("end", () => {
+				resolve(Buffer.concat(chunks));
+			});
+		});
+	});
+}
+
+function canAccessChannel(interaction) {
+	return (
+		interaction.guildId &&
+		interaction.channel.permissionsFor(interaction.guild.members.me).has(PermissionsBitField.Flags.ViewChannel) &&
+		interaction.channel.permissionsFor(interaction.guild.members.me).has(PermissionsBitField.Flags.SendMessages)
+	);
 }
 
 // returns the time in the format DD/MM/YYYY HH:MM:SS
@@ -182,5 +228,5 @@ function getTimeFromStamp(stamp) {
 }
 
 module.exports = {
-	sendRequestToWebServer,
+	handleWebServerInteraction,
 };

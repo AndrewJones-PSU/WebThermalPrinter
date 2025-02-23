@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
-const sendReq = require("./../src/sendReq.js");
+const { handleWebServerInteraction } = require("../src/sendReq");
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -14,6 +14,6 @@ module.exports = {
 		),
 
 	async execute(interaction) {
-		sendReq.sendRequestToWebServer(interaction, "preview");
+		handleWebServerInteraction(interaction, false);
 	},
 };
