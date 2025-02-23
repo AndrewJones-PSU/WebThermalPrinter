@@ -26,13 +26,18 @@ const nhm = new NodeHtmlMarkdown({ keepDataImages: true, useLinkReferenceDefinit
 
 // retrieve feed from url
 async function getFeed(url) {
-	let feed = await parser.parseURL(url);
+	let feed;
+	try {
+		feed = await parser.parseURL(url);
+	} catch (err) {
+		console.error(`Error getting Feed from ${url}!\n${err}`);
+		return {};
+	}
 	return feed;
 }
 
 // retrieve list of feeds from file
-async function getFeedsList(file) {
-	// TODO: add error handling (i.e. file not found)
+function getFeedsList(file) {
 	let feeds = fs.readFileSync(file, "utf8");
 	return feeds;
 }
@@ -45,6 +50,11 @@ async function getPrintedAndUpdate(file, feed) {
 	let printed;
 	let newItems = [];
 	let eonent = false;
+
+	// return nothing if feed is empty
+	if (!("items" in feed))
+		return []
+
 	// make sure the directory exists, if not, create it
 	if (!fs.existsSync("./printed")) {
 		fs.mkdirSync("./printed");
@@ -165,7 +175,7 @@ function logError(itemName, url, err, fromServer) {
 // main loop
 async function main() {
 	// get list of feeds from file
-	let feeds = await getFeedsList("./feedslist.json");
+	let feeds = getFeedsList("./feedslist.json");
 	// parse list of feeds
 	feeds = JSON.parse(feeds);
 	// for each feed, get feed, compare to printed items json, print new items
